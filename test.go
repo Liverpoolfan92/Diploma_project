@@ -23,7 +23,7 @@ func main() {
 		regex := regexp.MustCompile(`(?m)^[0-9]+: (.*?):.*?state UP`)
 		matches := regex.FindAllStringSubmatch(string(output), -1)
 		for _, match := range matches {
-			if strings.Contains(match[1], "eth") {
+			if strings.Contains(match[1], "eth0") {
 				interfaceName = match[1]
 				break
 			}
