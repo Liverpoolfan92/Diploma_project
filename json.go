@@ -31,6 +31,7 @@ func main() {
 
 	// Print the output
 	hostIP := strings.TrimSpace(out.String())
+	fmt.Println("IP:" + hostIP)
 	// Get a list of all network interfaces
 	interfaces, err := net.Interfaces()
 	if err != nil {

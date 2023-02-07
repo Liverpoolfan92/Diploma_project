@@ -1,6 +1,7 @@
 FROM ubuntu
 
 RUN apt update -yy && \
+    apt install -y iputils-ping net-tools && \
     apt install git -yy && \
     apt install libpcap-dev -yy && \
     apt install golang -yy && \
