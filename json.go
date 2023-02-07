@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -20,18 +19,6 @@ type chosen struct {
 }
 
 func main() {
-	cmd := exec.Command("sh", "-c", "ip route | awk '/default/ { print $3 }'")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Print the output
-	hostIP := strings.TrimSpace(out.String())
-	fmt.Println("IP:" + hostIP)
 	// Get a list of all network interfaces
 	interfaces, err := net.Interfaces()
 	if err != nil {
@@ -45,9 +32,9 @@ func main() {
 	}
 
 	// Send the interface names to port 8484
-	conn, err := net.Dial("tcp", hostIP+":8484")
+	conn, err := net.Dial("tcp", "localhost:8484")
 	if err != nil {
-		fmt.Printf("Error connecting to port 8484 \n"+"ip:"+hostIP+"\n %s", err.Error())
+		fmt.Printf("Error connecting to port 8484: %s\n", err.Error())
 		return
 	}
 	defer conn.Close()
