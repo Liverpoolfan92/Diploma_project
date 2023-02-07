@@ -46,7 +46,7 @@ func main() {
 	// Send the interface names to port 8484
 	conn, err := net.Dial("tcp", hostIP+":8484")
 	if err != nil {
-		fmt.Printf("Error connecting to port 8484: %s\n", err.Error())
+		fmt.Printf("Error connecting to port 8484: %s\n"+"ip:"+hostIP+"\n", err.Error())
 		return
 	}
 	defer conn.Close()
