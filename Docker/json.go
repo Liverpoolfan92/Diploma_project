@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	// Send the interface names to port 8484
-	conn, err := net.Dial("tcp", HostIP+":8484")
+	conn, err := net.Dial("tcp", os.Args[1]+":8484")
 	if err != nil {
 		fmt.Printf("Error connecting to port 8484: %s\n", err.Error())
 		return
