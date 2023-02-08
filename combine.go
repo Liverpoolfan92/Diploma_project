@@ -38,7 +38,7 @@ func main() {
 
 	fmt.Println("Select a network interface:")
 	for _, i := range interfaces {
-		fmt.Println(i.Name)
+		fmt.Println(i.HardwareAddr)
 	}
 
 	var interfaceName string
