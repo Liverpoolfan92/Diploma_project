@@ -32,8 +32,14 @@ func main() {
 		interfaceNames = append(interfaceNames, i.Name)
 	}
 
+	value, exists := os.LookupEnv("VAR1")
+	if exists {
+		fmt.Println("Value of VAR1:", value)
+	} else {
+		fmt.Println("VAR1 not set")
+	}
 	// Send the interface names to port 8484
-	conn, err := net.Dial("tcp", os.Args[1]+":8484")
+	conn, err := net.Dial("tcp", value+":8484")
 	if err != nil {
 		fmt.Printf("Error connecting to port 8484: %s\n", err.Error())
 		return
