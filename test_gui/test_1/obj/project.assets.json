@@ -177,19 +177,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\zhele\\.nuget\\packages\\": {}
+    "C:\\Users\\zhele\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\zhele\\OneDrive\\Работен плот\\Diploma\\test_gui\\test_1\\test_1.csproj",
+      "projectUniqueName": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\test_gui\\test_1\\test_1.csproj",
       "projectName": "test_1",
-      "projectPath": "C:\\Users\\zhele\\OneDrive\\Работен плот\\Diploma\\test_gui\\test_1\\test_1.csproj",
+      "projectPath": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\test_gui\\test_1\\test_1.csproj",
       "packagesPath": "C:\\Users\\zhele\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\zhele\\OneDrive\\Работен плот\\Diploma\\test_gui\\test_1\\obj\\",
+      "outputPath": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\test_gui\\test_1\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
         "C:\\Users\\zhele\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

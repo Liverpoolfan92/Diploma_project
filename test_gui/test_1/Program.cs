@@ -1,10 +1,10 @@
 ﻿using Docker.DotNet;
 using Docker.DotNet.Models;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
 
 namespace ConsoleApp1
 {
@@ -25,7 +25,7 @@ namespace ConsoleApp1
 
             int localPort = 8484;
             int targetPort = 8485;
-            IPAddress localAddress = IPAddress.Parse("172.20.160.1");
+            IPAddress localAddress = IPAddress.Any;
             IPAddress targetAddress = IPAddress.Parse("172.17.0.1");
 
             try
@@ -42,26 +42,30 @@ namespace ConsoleApp1
                 var buffer = new byte[1024];
                 int bytesRead = networkStream.Read(buffer, 0, buffer.Length);
 
-                var json = JsonSerializer.Deserialize<Interfaces>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                string incomingData = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                dynamic s = JsonConvert.DeserializeObject(incomingData);
+                var items = s.interfaces;
 
+                string[] json = ((Newtonsoft.Json.Linq.JArray)items).Select(jv => jv.ToString()).ToArray();
                 Console.WriteLine("Received interfaces:");
-                for (int i = 0; i < json.InterfaceList.Length; i++)
+                for (int i = 0; i < json.Length; i++)
                 {
-                    Console.WriteLine($"{i}: {json.InterfaceList[i]}");
+                    Console.WriteLine($"{i}: {json[i]}");
                 }
 
                 Console.WriteLine("Choose an interface by its number:");
                 int choice = int.Parse(Console.ReadLine());
 
-                var chosenData = new Chosen { Interface = json.InterfaceList[choice] };
-                var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(chosenData);
+                var chosenData = new Chosen { Interface = json[choice] };
+                var jsonBytes = JsonConvert.SerializeObject(chosenData);
 
                 TcpClient targetClient = new TcpClient();
                 targetClient.Connect(targetAddress, targetPort);
                 Console.WriteLine($"Connected to {targetAddress}:{targetPort}");
 
                 var targetStream = targetClient.GetStream();
-                targetStream.Write(jsonBytes, 0, jsonBytes.Length);
+                var test = Encoding.UTF8.GetBytes(jsonBytes);
+                targetStream.Write(test, 0, test.Length);
                 Console.WriteLine("Sent data");
 
                 targetClient.Close();
