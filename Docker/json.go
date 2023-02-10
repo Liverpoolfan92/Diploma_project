@@ -61,7 +61,7 @@ func main() {
 	}
 
 	// Start a listener on port 8485
-	listener, err := net.Listen("tcp", "192.168.62.40:8485")
+	listener, err := net.Listen("tcp", "127.0.0.1:8485")
 	if err != nil {
 		fmt.Printf("Error starting listener: %s\n", err.Error())
 		return
