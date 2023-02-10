@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9XIqCgJzS9EwNEqekEdDbEshWv9Rv158lE0GD7R4LOoxjnckkzR+dG8egeJn4a5apbQZlLEm2QZGe8nsj+7j/Q==",
+  "dgSpecHash": "BedwLkz6Qy+MN/6USWwiAeqckggPxdrRRhEDSCQ+doAm2U+Jzjjld3V+hZLAv9j0fYWQYzyFRbveaTenb8/3tQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\zhele\\OneDrive\\Работен плот\\Diploma\\test_gui\\ConsoleApp1\\ConsoleApp1.csproj",
+  "projectFilePath": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\test_gui\\ConsoleApp1\\ConsoleApp1.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\zhele\\.nuget\\packages\\newtonsoft.json\\13.0.2\\newtonsoft.json.13.0.2.nupkg.sha512"
   ],

@@ -52,7 +52,7 @@ func main() {
 		fmt.Printf("Error marshalling interface data: %s\n", err.Error())
 		return
 	}
-	fmt.Printf("JSON: %+v\n", interfacesData))
+	fmt.Printf("JSON: %+v\n", interfacesData)
 	_, err = conn.Write(data)
 	if err != nil {
 		fmt.Printf("Error sending data: %s\n", err.Error())
