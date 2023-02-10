@@ -26,7 +26,7 @@ namespace ConsoleApp1
             int localPort = 8484;
             int targetPort = 8485;
             IPAddress localAddress = IPAddress.Any;
-            IPAddress targetAddress = IPAddress.Parse("192.168.62.40");
+            IPAddress targetAddress = IPAddress.Parse("172.31.176.1");
 
             try
             {

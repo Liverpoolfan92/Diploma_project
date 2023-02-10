@@ -9,8 +9,7 @@ namespace DockerRunScript
         static void Main(string[] args)
         {
             string hostIP = GetLocalIPAddress();
-            Console.WriteLine(hostIP);
-            string dockerCommand = "docker run -dit --rm --network host --name PacketGenerator --ip="+ "192.168.65.99 --env VAR1=" + hostIP + " test_1 bash";
+            string dockerCommand = "docker run -dit --rm --network host --name PacketGenerator --env VAR1=" + hostIP + " test_1 bash";
 
             ExecuteDockerCommand(dockerCommand);
         }
