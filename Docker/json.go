@@ -10,7 +10,7 @@ import (
 )
 
 // Struct to hold all interfaces names
-type Interfaces struct {
+type InterfacesCollection struct {
 	Interfaces []string `json:"interfaces"`
 }
 
@@ -46,13 +46,13 @@ func main() {
 	}
 	defer conn.Close()
 
-	interfacesData := Interfaces{Interfaces: interfaceNames}
+	interfacesData := InterfacesCollection{Interfaces: interfaceNames}
 	data, err := json.Marshal(interfacesData)
 	if err != nil {
 		fmt.Printf("Error marshalling interface data: %s\n", err.Error())
 		return
 	}
-
+	fmt.Printf("JSON: %+v\n", interfacesData))
 	_, err = conn.Write(data)
 	if err != nil {
 		fmt.Printf("Error sending data: %s\n", err.Error())
