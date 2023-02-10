@@ -21,12 +21,6 @@ type chosen struct {
 
 func main() {
 
-	// Get the local host IP address
-	host, _ := net.LookupHost("")
-
-	// Print the host IP address
-	fmt.Println("Host IP address:", host[0])
-	
 	// Get a list of all network interfaces
 	interfaces, err := net.Interfaces()
 	if err != nil {
