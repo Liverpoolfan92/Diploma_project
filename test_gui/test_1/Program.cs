@@ -42,7 +42,7 @@ namespace ConsoleApp1
                 var buffer = new byte[1024];
                 int bytesRead = networkStream.Read(buffer, 0, buffer.Length);
 
-                string incomingData = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                string incomingData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                 dynamic s = JsonConvert.DeserializeObject(incomingData);
                 var items = s.interfaces;
 
