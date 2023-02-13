@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Windows.Forms;
 using System.Net;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-namespace DockerRunScript
+namespace WinformsExample
 {
-    class Program
+    public partial class Form1 : Form
     {
-        static void Main(string[] args)
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void runDockerButton_Click(object sender, EventArgs e)
         {
             string hostIP = GetLocalIPAddress();
             string dockerCommand = "docker run -dit --rm --network host --name PacketGenerator --env VAR1=" + hostIP + " --dns=212.39.90.52 test_1 bash";
@@ -15,7 +21,7 @@ namespace DockerRunScript
             ExecuteDockerCommand(dockerCommand);
         }
 
-        static string GetLocalIPAddress()
+        private string GetLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
@@ -28,7 +34,7 @@ namespace DockerRunScript
             return null;
         }
 
-        static void ExecuteDockerCommand(string command)
+        private void ExecuteDockerCommand(string command)
         {
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();

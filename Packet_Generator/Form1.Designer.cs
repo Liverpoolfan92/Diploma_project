@@ -30,27 +30,7 @@
         {
             this.Choose_Interface = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // Choose_Interface
-            // 
-            this.Choose_Interface.Location = new System.Drawing.Point(320, 70);
-            this.Choose_Interface.Name = "Choose_Interface";
-            this.Choose_Interface.Size = new System.Drawing.Size(148, 64);
-            this.Choose_Interface.TabIndex = 0;
-            this.Choose_Interface.Text = "Interface";
-            this.Choose_Interface.UseVisualStyleBackColor = true;
-            this.Choose_Interface.Click += new System.EventHandler(this.Choose_Interface_Click);
-            // 
-            // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.Choose_Interface);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.ResumeLayout(false);
-
+           
         }
 
         #endregion

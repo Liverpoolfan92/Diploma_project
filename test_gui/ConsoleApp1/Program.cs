@@ -1,41 +1,90 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using Newtonsoft.Json;
 
-namespace JSON_Communicator
+namespace GetHostIpRange
 {
     class Program
     {
         static void Main(string[] args)
         {
-            // Create a TCP listener on port 8484
-            TcpListener listener = new TcpListener(IPAddress.Parse("172.20.160.1"), 8484);
-            listener.Start();
-            Console.WriteLine("Listening on port 8484...");
+            // Get the host IP address range
+            var ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+            var unicastAddresses = ipProperties.GetUnicastAddresses();
+            var ipv4Addresses = unicastAddresses
+                .Where(address => address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                .ToList();
 
-            // Wait for an incoming connection
-            TcpClient client = listener.AcceptTcpClient();
-            Console.WriteLine("Received incoming connection.");
+            // Choose a random free IP address
+            var random = new Random();
+            IPAddress randomIpAddress = null;
+            while (randomIpAddress == null)
+            {
+                var randomIndex = random.Next(ipv4Addresses.Count);
+                var randomAddress = ipv4Addresses[randomIndex];
+                var network = new IPAddressRange(randomAddress.Address, randomAddress.IPv4Mask);
+                randomIpAddress = network.GetAllAddresses().Where(address => !IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections().Any(conn => conn.LocalEndPoint.Address.Equals(address))).OrderBy(x => random.Next()).FirstOrDefault();
+            }
 
-            // Read the incoming data as a string
-            byte[] buffer = new byte[1024];
-            int bytesRead = client.GetStream().Read(buffer, 0, buffer.Length);
-            string incomingData = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            // Print the random free IP address
+            Console.WriteLine("Random free IP address: " + randomIpAddress);
+        }
+    }
 
-            // Parse the incoming JSON data into an array
-            string[] interfaces = JsonConvert.DeserializeObject<string[]>(incomingData);
+    public static class IPAddressRange
+    {
+        readonly AddressFamily addressFamily;
+        readonly byte[] lowerBytes;
+        readonly byte[] upperBytes;
 
-            // Choose a random interface from the array
-            Random random = new Random();
-            int index = random.Next(0, interfaces.Length - 1);
-            string chosenInterface = interfaces[index];
+        public IPAddressRange(IPAddress lower, IPAddress upper)
+        {
+            // Assert that lower.AddressFamily == upper.AddressFamily
+            this.addressFamily = lower.AddressFamily;
+            this.lowerBytes = lower.GetAddressBytes();
+            this.upperBytes = upper.GetAddressBytes();
+        }
 
-            // Send the chosen interface to port 8485
-            TcpClient sendClient = new TcpClient("localhost", 8485);
-            byte[] sendBuffer = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(chosenInterface));
-            sendClient.GetStream().Write(sendBuffer, 0, sendBuffer.Length);
-            Console.WriteLine("Sent chosen interface to port 8485.");
+        public IEnumerable<IPAddress> GetAllAddresses()
+        {
+            if (this.addressFamily == AddressFamily.InterNetworkV6)
+            {
+                throw new NotSupportedException("The IPv6 address family is not supported.");
+            }
+
+            var current = new byte[4];
+            for (var i = 0; i < 4; i++)
+            {
+                current[i] = (byte)(this.lowerBytes[i]);
+            }
+
+            var upperBound = new byte[4];
+            for (var i = 0; i < 4; i++)
+            {
+                upperBound[i] = (byte)(this.upperBytes[i]);
+            }
+
+            while (current[0] <= upperBound[0] && current[1] <= upperBound[1] && current[2] <= upperBound[2] && current[3] <= upperBound[3])
+            {
+                yield return new IPAddress(current);
+
+                current[3]++;
+                for (var i = 3; i >= 0; i--)
+                {
+                    if (current[i] > upperBound[i])
+                    {
+                        if (i == 0)
+                        {
+                            yield break;
+                        }
+
+                        current[i - 1]++;
+                        current[i] = 0;
+                    }
+                }
+            }
         }
     }
 }
