@@ -5,3 +5,16 @@ C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7
 C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.AssemblyInfoInputs.cache
 C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.AssemblyInfo.cs
 C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.csproj.CoreCompileInputs.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.Form2.resources
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\bin\Debug\net7.0-windows\Packet_Generator.exe
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\bin\Debug\net7.0-windows\Packet_Generator.deps.json
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\bin\Debug\net7.0-windows\Packet_Generator.runtimeconfig.json
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\bin\Debug\net7.0-windows\Packet_Generator.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\bin\Debug\net7.0-windows\Packet_Generator.pdb
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\bin\Debug\net7.0-windows\Newtonsoft.Json.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.csproj.CopyComplete
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\refint\Packet_Generator.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.pdb
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\Packet_Generator.genruntimeconfig.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\Packet_Generator\obj\Debug\net7.0-windows\ref\Packet_Generator.dll
