@@ -4,6 +4,7 @@ using System.Net;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using static System.Windows.Forms.DataFormats;
+using System.Net.NetworkInformation;
 
 namespace Packet_Generator
 {
@@ -19,7 +20,7 @@ namespace Packet_Generator
         private void Start_button_Click(object sender, EventArgs e)
         {
             string hostIP = GetLocalIPAddress();
-            string dockerCommand = "docker run -dit --rm --network host --name PacketGenerator --env VAR1=" + hostIP + " --dns=212.39.90.52 test_1 bash";
+            string dockerCommand = "docker run -dit --rm --network host --name PacketGenerator --env VAR1=" + hostIP + " packetgenerator bash";
 
             ExecuteDockerCommand(dockerCommand);
             // Switch to another form
@@ -32,12 +33,19 @@ namespace Packet_Generator
 
         private string GetLocalIPAddress()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface ni in interfaces)
             {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                if (ni.Name.EndsWith("(Default Switch)"))
                 {
-                    return ip.ToString();
+                    IPInterfaceProperties ipProps = ni.GetIPProperties();
+
+                    foreach (UnicastIPAddressInformation addr in ipProps.UnicastAddresses)
+                    {
+                        Console.WriteLine("\tIP Address: {0}", addr.Address);
+                        return addr.Address.ToString();
+                    }
                 }
             }
             return null;

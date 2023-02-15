@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Packet_Generator
 {
@@ -44,15 +45,26 @@ namespace Packet_Generator
 
                 string[] json = ((Newtonsoft.Json.Linq.JArray)items).Select(jv => jv.ToString()).ToArray();
                 //Console.WriteLine("Received interfaces:");
-                for (int i = 0; i < json.Length; i++)
+                /*for (int i = 0; i < json.Length; i++)
                 {
                     Console.WriteLine($"{i}: {json[i]}");
                 }
 
                 Console.WriteLine("Choose an interface by its number:");
-                int choice = int.Parse(Console.ReadLine());
+                int choice = int.Parse(Console.ReadLine());*/
 
-                var chosenData = new Chosen { Interface = json[choice] };
+                for (int i = 0; i < json.Length; i++)
+                {
+                    Button btn = new Button();
+                    btn.Text = json[i];
+                    btn.Name = "Button" + i.ToString();
+                    btn.Click += new EventHandler(Button_Click);
+                    btn.Location = new System.Drawing.Point(10, 10 + i * 50);
+                    btn.Size = new System.Drawing.Size(100, 30);
+                    this.Controls.Add(btn);
+                }
+
+               /* var chosenData = new Chosen { Interface = json[choice] };
                 var jsonBytes = JsonConvert.SerializeObject(chosenData);
 
                 TcpClient targetClient = new TcpClient();
@@ -64,7 +76,7 @@ namespace Packet_Generator
                 targetStream.Write(test, 0, test.Length);
                 Console.WriteLine("Sent data");
 
-                targetClient.Close();
+                targetClient.Close();*/
                 listener.Stop();
             }
             catch (Exception ex)
@@ -73,6 +85,12 @@ namespace Packet_Generator
             }
         }
 
+        private void Button_Click(object sender, EventArgs e)
+        {
+            Button btn = (Button)sender;
+            int choice = Int32.Parse(Regex.Match(btn.Name, @"\d+").Value);
+            Console.WriteLine("You chose " + btn.Text + " with index " + choice);
+        }
         private void InitializeComponent()
         {
             this.choose_interface = new System.Windows.Forms.Button();
