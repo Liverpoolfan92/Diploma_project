@@ -7,19 +7,19 @@ using static System.Windows.Forms.DataFormats;
 
 namespace Packet_Generator
 {
-    public partial class Form1 : Form
+    public partial class Form2 : Form
     {
         private Button Start_button;
 
-        public Form1()
+        public Form2()
         {
             InitializeComponent();
         }
 
         private void Start_button_Click(object sender, EventArgs e)
         {
-            Form2 form2 = (Form2)Application.OpenForms["Form2"];
-            string my_interface = form2.Parent_int;
+            /*Form2 form2 = (Form2)Application.OpenForms["Form2"];
+            string my_interface = form2.Parent_int;*/
 
             // Create user-defined network
             string networkName = "packet_network";

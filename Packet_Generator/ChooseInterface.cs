@@ -1,120 +1,84 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace Packet_Generator
+namespace NetworkInterfacesDemo
 {
-    public partial class Form2 : Form
+    public partial class Form1 : Form
     {
-        public string Parent_int { get; set; }
-        private Button choose_interface;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private string selectedInterfaceName;
 
-        public Form2()
+        public Form1()
         {
             InitializeComponent();
         }
-        private void choose_interface_Click(object sender, EventArgs e)
+
+        private void Form1_Load(object sender, EventArgs e)
         {
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback && i.OperationalStatus == OperationalStatus.Up)
+                .ToList();
 
-            string hostName = Dns.GetHostName();
-            
-            int localPort = 8484;
-            int targetPort = 8485;
-            IPAddress localAddress = IPAddress.Any;
-            IPAddress targetAddress = IPAddress.Parse("172.31.176.1");
-
-            try
+            foreach (var networkInterface in interfaces)
             {
-                var listener = new TcpListener(localAddress, localPort);
-                listener.Start();
-
-                //Console.WriteLine($"Listening on {localAddress}:{localPort}");
-
-                TcpClient client1 = listener.AcceptTcpClient();
-                //Console.WriteLine("Received connection");
-
-                var networkStream = client1.GetStream();
-                var buffer = new byte[1024];
-                int bytesRead = networkStream.Read(buffer, 0, buffer.Length);
-
-                string incomingData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                dynamic s = JsonConvert.DeserializeObject(incomingData);
-                var items = s.interfaces;
-
-                string[] json = ((Newtonsoft.Json.Linq.JArray)items).Select(jv => jv.ToString()).ToArray();
-                //Console.WriteLine("Received interfaces:");
-                /*for (int i = 0; i < json.Length; i++)
-                {
-                    Console.WriteLine($"{i}: {json[i]}");
-                }
-
-                Console.WriteLine("Choose an interface by its number:");
-                int choice = int.Parse(Console.ReadLine());*/
-
-                for (int i = 0; i < json.Length; i++)
-                {
-                    Button btn = new Button();
-                    btn.Text = json[i];
-                    btn.Name = "Button" + i.ToString();
-                    btn.Click += new EventHandler(Button_Click);
-                    btn.Location = new System.Drawing.Point(10, 10 + i * 50);
-                    btn.Size = new System.Drawing.Size(100, 30);
-                    this.Controls.Add(btn);
-                }
-
-                // Switch to another form
-                Form1 form1 = new Form1();
-                form1.Show();
-
-                listener.Stop();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                comboBox1.Items.Add(networkInterface.Name);
             }
         }
 
-        private void Button_Click(object sender, EventArgs e)
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Button btn = (Button)sender;
-            int choice = Int32.Parse(Regex.Match(btn.Name, @"\d+").Value);
-            Console.WriteLine("You chose " + btn.Text + " with index " + choice);
+            selectedInterfaceName = comboBox1.SelectedItem.ToString();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(selectedInterfaceName))
+            {
+                MessageBox.Show("Please select a network interface first.");
+                return;
+            }
+
+            // Do something with the selected interface name
+            MessageBox.Show($"Selected interface name: {selectedInterfaceName}");
+        }
+
         private void InitializeComponent()
         {
-            this.choose_interface = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
-            // choose_interface
+            // button1
             // 
-            this.choose_interface.Location = new System.Drawing.Point(60, 58);
-            this.choose_interface.Name = "choose_interface";
-            this.choose_interface.Size = new System.Drawing.Size(170, 27);
-            this.choose_interface.TabIndex = 0;
-            this.choose_interface.Text = "Choose Interface";
-            this.choose_interface.UseVisualStyleBackColor = true;
-            this.choose_interface.Click += new System.EventHandler(this.choose_interface_Click);
+            this.button1.Location = new System.Drawing.Point(193, 38);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(131, 52);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // Form2
+            // comboBox1
             // 
-            this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Controls.Add(this.choose_interface);
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(193, 106);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 23);
+            this.comboBox1.TabIndex = 1;
+            // 
+            // Form1
+            // 
+            this.ClientSize = new System.Drawing.Size(691, 450);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.button1);
             this.Name = "Form2";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
 
         }
-    }
-
-    class Interfaces
-    {
-        public string[] InterfaceList { get; set; }
-    }
-
-    class Chosen
-    {
-        public string Interface { get; set; }
     }
 }
