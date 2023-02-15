@@ -9,6 +9,7 @@ namespace Packet_Generator
 {
     public partial class Form2 : Form
     {
+        public string Parent_int { get; set; }
         private Button choose_interface;
 
         public Form2()
@@ -64,19 +65,10 @@ namespace Packet_Generator
                     this.Controls.Add(btn);
                 }
 
-               /* var chosenData = new Chosen { Interface = json[choice] };
-                var jsonBytes = JsonConvert.SerializeObject(chosenData);
+                // Switch to another form
+                Form1 form1 = new Form1();
+                form1.Show();
 
-                TcpClient targetClient = new TcpClient();
-                targetClient.Connect(targetAddress, targetPort);
-                Console.WriteLine($"Connected to {targetAddress}:{targetPort}");
-
-                var targetStream = targetClient.GetStream();
-                var test = Encoding.UTF8.GetBytes(jsonBytes);
-                targetStream.Write(test, 0, test.Length);
-                Console.WriteLine("Sent data");
-
-                targetClient.Close();*/
                 listener.Stop();
             }
             catch (Exception ex)

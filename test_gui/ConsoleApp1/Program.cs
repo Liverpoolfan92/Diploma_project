@@ -1,27 +1,65 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net.NetworkInformation;
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
-        NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+        // Create user-defined network
+        Process.Start("docker", "network create my_network");
 
-        foreach (NetworkInterface ni in interfaces)
+        // Start Docker container in network
+        Process.Start("docker", "run --network=my_network --name=my_container -p 80:80 my_image");
+
+        // Send host IP to container via JSON
+        await SendHostIpToDocker();
+
+        // Listen for JSON data on port 8484
+        await ListenForJson();
+    }
+
+    static async Task SendHostIpToDocker()
+    {
+        var client = new HttpClient();
+        var ip = GetHostIp();
+        var content = new StringContent(JsonSerializer.Serialize(new { hostIp = ip }), System.Text.Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("http://my_container:80/updateHostIp", content);
+    }
+
+    static async Task ListenForJson()
+    {
+        var listener = new HttpListener();
+        listener.Prefixes.Add("http://localhost:8484/");
+
+        listener.Start();
+
+        while (true)
         {
-            if(ni.Name.EndsWith("(Default Switch)"))
-            {
-                Console.WriteLine("Interface Name: {0}", ni.Name);
+            var context = await listener.GetContextAsync();
+            var request = context.Request;
 
-                IPInterfaceProperties ipProps = ni.GetIPProperties();
-                foreach (UnicastIPAddressInformation addr in ipProps.UnicastAddresses)
+            if (request.ContentType == "application/json")
+            {
+                using (var streamReader = new System.IO.StreamReader(request.InputStream))
                 {
-                    Console.WriteLine("\tIP Address: {0}", addr.Address);
+                    var body = await streamReader.ReadToEndAsync();
+                    var json = JsonSerializer.Deserialize<JsonElement>(body);
+
+                    Console.WriteLine($"Received JSON data: {json}");
                 }
             }
-        }
 
-        Console.ReadLine();
+            context.Response.Close();
+        }
+    }
+
+    static string GetHostIp()
+    {
+        // Replace with actual method for getting host IP address
+        return "192.168.0.100";
     }
 }

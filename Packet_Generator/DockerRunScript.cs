@@ -4,7 +4,6 @@ using System.Net;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using static System.Windows.Forms.DataFormats;
-using System.Net.NetworkInformation;
 
 namespace Packet_Generator
 {
@@ -19,13 +18,23 @@ namespace Packet_Generator
 
         private void Start_button_Click(object sender, EventArgs e)
         {
-            string hostIP = GetLocalIPAddress();
-            string dockerCommand = "docker run -dit --rm --network host --name PacketGenerator --env VAR1=" + hostIP + " packetgenerator bash";
+            Form2 form2 = (Form2)Application.OpenForms["Form2"];
+            string my_interface = form2.Parent_int;
 
+            // Create user-defined network
+            string networkName = "packet_network";
+            ExecuteDockerCommand($"docker network create {networkName}");
+
+            // Get host IP address
+            string hostIP = GetLocalIPAddress();
+
+            // Run Docker container in user-defined network
+            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={hostIP} --network {networkName} packetgenerator bash";
             ExecuteDockerCommand(dockerCommand);
-            // Switch to another form
+
+            /*// Switch to another form
             Form2 form2 = new Form2();
-            form2.Show();
+            form2.Show();*/
 
             // Close the current form
             //this.Close();
@@ -33,19 +42,12 @@ namespace Packet_Generator
 
         private string GetLocalIPAddress()
         {
-            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-            foreach (NetworkInterface ni in interfaces)
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
             {
-                if (ni.Name.EndsWith("(Default Switch)"))
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                 {
-                    IPInterfaceProperties ipProps = ni.GetIPProperties();
-
-                    foreach (UnicastIPAddressInformation addr in ipProps.UnicastAddresses)
-                    {
-                        Console.WriteLine("\tIP Address: {0}", addr.Address);
-                        return addr.Address.ToString();
-                    }
+                    return ip.ToString();
                 }
             }
             return null;
@@ -61,6 +63,7 @@ namespace Packet_Generator
             process.StartInfo = startInfo;
             process.Start();
         }
+
 
         private void InitializeComponent()
         {
