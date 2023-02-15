@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -36,15 +38,52 @@ namespace NetworkInterfacesDemo
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedInterfaceName))
-            {
-                MessageBox.Show("Please select a network interface first.");
-                return;
-            }
+            /*Form2 form2 = (Form2)Application.OpenForms["Form2"];
+            string my_interface = form2.Parent_int;*/
 
-            // Do something with the selected interface name
-            MessageBox.Show($"Selected interface name: {selectedInterfaceName}");
+            // Create user-defined network
+            string networkName = "packet_network";
+            ExecuteDockerCommand($"docker network create {networkName}");
+
+            // Get host IP address
+            string hostIP = GetLocalIPAddress();
+
+            // Run Docker container in user-defined network
+            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={hostIP} --network {networkName} --opt parent={selectedInterfaceName} packetgenerator bash";
+            ExecuteDockerCommand(dockerCommand);
+
+            /*// Switch to another form
+            Form2 form2 = new Form2();
+            form2.Show();*/
+
+            // Close the current form
+            //this.Close();
         }
+
+        private string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            return null;
+        }
+
+        private void ExecuteDockerCommand(string command)
+        {
+            Process process = new Process();
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = "/C " + command;
+            process.StartInfo = startInfo;
+            process.Start();
+        }
+
 
         private void InitializeComponent()
         {
