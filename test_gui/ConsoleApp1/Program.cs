@@ -10,10 +10,10 @@ class Program
     static async Task Main(string[] args)
     {
         // Create user-defined network
-        Process.Start("docker", "network create my_network");
+        Process.Start("docker", "network create packetgenerator");
 
         // Start Docker container in network
-        Process.Start("docker", "run --network=my_network --name=my_container -p 80:80 my_image");
+        Process.Start("docker", "run --network=packetgenerator --name=PacketGenerator -p 8484:8484 -p 8485:8485 packet_image");
 
         // Send host IP to container via JSON
         await SendHostIpToDocker();
