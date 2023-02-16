@@ -18,7 +18,7 @@ type chosen struct {
 
 func main() {
 	// Start a listener on port 8484
-	listener, err := net.Listen("tcp", ":8484")
+	listener, err := net.Listen("tcp", value+":8484")
 	if err != nil {
 		fmt.Printf("Error starting listener: %s\n", err.Error())
 		return
@@ -62,7 +62,7 @@ func main() {
 		chosenInterface := incomingInterfaces.Interfaces[interfacenum]
 
 		// Connect to port 8485
-		conn, err = net.Dial("tcp", "localhost:8485")
+		conn, err = net.Dial("tcp", value+":8485")
 		if err != nil {
 			fmt.Printf("Error connecting to port 8485: %s\n", err.Error())
 			continue

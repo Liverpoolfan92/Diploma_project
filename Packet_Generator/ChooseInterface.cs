@@ -43,13 +43,13 @@ namespace NetworkInterfacesDemo
 
             // Create user-defined network
             string networkName = "packet_network";
-            ExecuteDockerCommand($"docker network create {networkName}");
+            ExecuteDockerCommand($"docker network create {networkName} --opt parent={selectedInterfaceName}");
 
             // Get host IP address
             string hostIP = GetLocalIPAddress();
 
             // Run Docker container in user-defined network
-            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={hostIP} --network {networkName} --opt parent={selectedInterfaceName} packetgenerator bash";
+            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={hostIP} --network {networkName} test_1 bash";
             ExecuteDockerCommand(dockerCommand);
 
             /*// Switch to another form
