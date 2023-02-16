@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -44,12 +45,12 @@ namespace NetworkInterfacesDemo
             // Create user-defined network
             string networkName = "packet_network";
             ExecuteDockerCommand($"docker network create {networkName} --opt parent={selectedInterfaceName}");
-
+            
             // Get host IP address
-            string hostIP = GetLocalIPAddress();
+            var ipaddr = GetIpAddressByInterfaceName(selectedInterfaceName);
 
             // Run Docker container in user-defined network
-            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={hostIP} --network {networkName} test_1 bash";
+            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={ipaddr} --network {networkName} test_1 bash";
             ExecuteDockerCommand(dockerCommand);
 
             /*// Switch to another form
@@ -82,6 +83,25 @@ namespace NetworkInterfacesDemo
             startInfo.Arguments = "/C " + command;
             process.StartInfo = startInfo;
             process.Start();
+        }
+
+        public static IPAddress GetIpAddressByInterfaceName(string interfaceName)
+        {
+            foreach (var iface in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (iface.Name == interfaceName)
+                {
+                    foreach (var addrInfo in iface.GetIPProperties().UnicastAddresses)
+                    {
+                        if (addrInfo.Address.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            return addrInfo.Address;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
 
