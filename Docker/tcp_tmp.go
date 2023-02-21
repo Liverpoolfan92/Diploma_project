@@ -5,148 +5,195 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"strings"
-	"time"
 
-	"github.com/ghedo/go.pkt/eth"
-	"github.com/ghedo/go.pkt/tcp"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 )
 
 func main() {
-	// Prompt the user for various fields
-	var srcMacStr, dstMacStr, srcIPStr, dstIPStr, srcPortStr, dstPortStr, payloadStr, ttlStr string
+	// Get input from user
+	var srcMacStr, dstMacStr, srcIPStr, dstIPStr, srcPortStr, dstPortStr, ttlStr, seqNumStr, ackNumStr, flagsStr, winSizeStr string
+	var payload []byte
 
-	fmt.Print("Enter the source MAC address: ")
+	fmt.Print("Enter source MAC address (e.g. 00:11:22:33:44:55): ")
 	fmt.Scanln(&srcMacStr)
 
-	fmt.Print("Enter the destination MAC address: ")
+	fmt.Print("Enter destination MAC address (e.g. 00:11:22:33:44:55): ")
 	fmt.Scanln(&dstMacStr)
 
-	fmt.Print("Enter the source IP address: ")
+	fmt.Print("Enter source IP address: ")
 	fmt.Scanln(&srcIPStr)
 
-	fmt.Print("Enter the destination IP address: ")
+	fmt.Print("Enter destination IP address: ")
 	fmt.Scanln(&dstIPStr)
 
-	fmt.Print("Enter the source port: ")
+	fmt.Print("Enter source port number: ")
 	fmt.Scanln(&srcPortStr)
 
-	fmt.Print("Enter the destination port: ")
+	fmt.Print("Enter destination port number: ")
 	fmt.Scanln(&dstPortStr)
 
-	fmt.Print("Enter the payload: ")
-	fmt.Scanln(&payloadStr)
-
-	fmt.Print("Enter the TTL: ")
+	fmt.Print("Enter TTL: ")
 	fmt.Scanln(&ttlStr)
 
-	// Parse the fields
+	fmt.Print("Enter sequence number: ")
+	fmt.Scanln(&seqNumStr)
+
+	fmt.Print("Enter acknowledgment number: ")
+	fmt.Scanln(&ackNumStr)
+
+	fmt.Print("Enter TCP flags (e.g. SYN, ACK, FIN): ")
+	fmt.Scanln(&flagsStr)
+
+	fmt.Print("Enter window size: ")
+	fmt.Scanln(&winSizeStr)
+
+	fmt.Print("Enter payload: ")
+	fmt.Scanln(&payload)
+
+	// Parse input values
 	srcMac, err := net.ParseMAC(srcMacStr)
 	if err != nil {
-		fmt.Println("Error parsing source MAC address:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse source MAC address: %v", err)
+		return
 	}
 
 	dstMac, err := net.ParseMAC(dstMacStr)
 	if err != nil {
-		fmt.Println("Error parsing destination MAC address:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse destination MAC address: %v", err)
+		return
 	}
 
 	srcIP := net.ParseIP(srcIPStr)
 	if srcIP == nil {
-		fmt.Println("Error parsing source IP address:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse source IP address: %v", err)
+		return
 	}
 
 	dstIP := net.ParseIP(dstIPStr)
 	if dstIP == nil {
-		fmt.Println("Error parsing destination IP address:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse destination IP address: %v", err)
+		return
 	}
 
 	srcPort, err := strconv.Atoi(srcPortStr)
 	if err != nil {
-		fmt.Println("Error parsing source port:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse source port number: %v", err)
+		return
 	}
 
 	dstPort, err := strconv.Atoi(dstPortStr)
 	if err != nil {
-		fmt.Println("Error parsing destination port:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse destination port number: %v", err)
+		return
 	}
-
-	payload := []byte(payloadStr)
 
 	ttl, err := strconv.Atoi(ttlStr)
 	if err != nil {
-		fmt.Println("Error parsing TTL:", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "Failed to parse TTL: %v", err)
+		return
 	}
 
-	// Create Ethernet packet
-	ethHeader := eth.Header{
-		SrcAddr: srcMAC,
-		DstAddr: dstMAC,
-		Type:    eth.EthertypeIPv4,
-	}
-	ethPacket, err := packet.NewPacket(&ethHeader, nil)
+	seqNum, err := strconv.Atoi(seqNumStr)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Failed to parse sequence number: %v", err)
+		return
 	}
 
-	// Create IPv4 packet
-	ipHeader := ip.Header{
+	ackNum, err := strconv.Atoi(ackNumStr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to parse acknowledgment number: %v", err)
+		return
+	}
+
+	var flags layers.TCPFlag
+	switch flagsStr {
+	case "FIN":
+		flags = layers.TCPFlagFin
+	case "SYN":
+		flags = layers.TCPFlagSyn
+	case "RST":
+		flags = layers
+	case "PSH":
+		flags = layers.TCPFlagPsh
+	case "ACK":
+		flags = layers.TCPFlagAck
+	case "URG":
+		flags = layers.TCPFlagUrg
+	case "ECE":
+		flags = layers.TCPFlagECE
+	case "CWR":
+		flags = layers.TCPFlagCWR
+	default:
+		fmt.Fprintf(os.Stderr, "Invalid TCP flags")
+		return
+	}
+	
+	winSize, err := strconv.Atoi(winSizeStr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to parse window size: %v", err)
+		return
+	}
+	
+	// Create packet
+	buf := gopacket.NewSerializeBuffer()
+	opts := gopacket.SerializeOptions{
+		FixLengths:       true,
+		ComputeChecksums: true,
+	}
+	
+	// Ethernet layer
+	ethLayer := &layers.Ethernet{
+		SrcMAC:       srcMac,
+		DstMAC:       dstMac,
+		EthernetType: layers.EthernetTypeIPv4,
+	}
+	if err := ethLayer.SerializeTo(buf, opts); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to serialize Ethernet layer: %v", err)
+		return
+	}
+	
+	// IP layer
+	ipLayer := &layers.IPv4{
 		Version:  4,
-		Len:      20,
-		TOS:      0,
-		ID:       0,
-		Flags:    ip.DontFragment,
 		TTL:      uint8(ttl),
-		Protocol: ip.ProtocolTCP,
-		SrcAddr:  srcIP,
-		DstAddr:  dstIP,
+		SrcIP:    srcIP,
+		DstIP:    dstIP,
+		Protocol: layers.IPProtocolTCP,
 	}
-	ipPacket, err := packet.NewPacket(&ipHeader, ethPacket)
-	if err != nil {
-		log.Fatal(err)
+	if err := ipLayer.SerializeTo(buf, opts); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to serialize IP layer: %v", err)
+		return
 	}
-
-	// Create TCP packet
-	tcpHeader := tcp.Header{
-		SrcPort: tcp.Port(srcPort),
-		DstPort: tcp.Port(dstPort),
-		SeqNum:  tcp.SeqNum(0),
-		AckNum:  tcp.AckNum(0),
-		Flags:   tcp.FlagSyn,
-		WinSize: tcp.WindowSize(4096),
+	
+	// TCP layer
+	tcpLayer := &layers.TCP{
+		SrcPort: layers.TCPPort(srcPort),
+		DstPort: layers.TCPPort(dstPort),
+		Seq:     uint32(seqNum),
+		Ack:     uint32(ackNum),
+		Window:  uint16(winSize),
+		Flags:   flags,
 	}
-	tcpPacket, err := packet.NewPacket(&tcpHeader, ipPacket)
-	if err != nil {
-		log.Fatal(err)
+	if err := tcpLayer.SetNetworkLayerForChecksum(ipLayer); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to set network layer for TCP checksum: %v", err)
+		return
 	}
-
-	// Add payload to TCP packet
-	err = tcpPacket.SetPayload(payload)
-	if err != nil {
-		log.Fatal(err)
+	if err := tcpLayer.SerializeTo(buf, opts); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to serialize TCP layer: %v", err)
+		return
 	}
-
-	// Calculate TCP checksum
-	tcpHeader.CalculateChecksum(ipPacket)
-
-	// Send packet on wire
-	handle, err := pcap.OpenLive("eth0", 65535, true, 0)
-	if err != nil {
-		log.Fatal(err)
+	
+	// Payload layer
+	if len(payload) > 0 {
+		if err := gopacket.SerializeLayers(buf, opts, gopacket.Payload(payload)); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to serialize payload layer: %v", err)
+			return
+		}
 	}
-	defer handle.Close()
-
-	err = handle.SendPacket(tcpPacket.Bytes())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Packet sent!")
-}
+	
+	// Send packet
+	packetData := buf.Bytes()
+	fmt.Printf("Sending packet with length %d\n", len(packetData))
+	fmt.Printf("Packet data: %v\n", packetData)
+	
