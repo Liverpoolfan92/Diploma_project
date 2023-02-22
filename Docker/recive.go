@@ -3,84 +3,120 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ghedo/go.pkt/eth"
+	"github.com/ghedo/go.pkt/ip"
 	"net"
 )
 
-// Struct to hold incoming interface names
-type Interfaces struct {
-	Interfaces []string `json:"interfaces"`
-}
-
-// Struct to hold the chosen interface name
-type chosen struct {
-	Interface string `json:"interface"`
+type PacketInfo struct {
+	SrcMAC  string `json:"srcMAC"`
+	DstMAC  string `json:"dstMAC"`
+	SrcIP   string `json:"srcIP"`
+	DstIP   string `json:"dstIP"`
+	SrcPort int    `json:"srcPort"`
+	DstPort int    `json:"dstPort"`
+	Payload string `json:"payload"`
+	TTL     int    `json:"ttl"`
 }
 
 func main() {
-	// Start a listener on port 8484
-	listener, err := net.Listen("tcp", value+":8484")
+	fmt.Println("Listening on port 8484 for incoming JSON packets...")
+	addr, err := net.ResolveTCPAddr("tcp", ":8484")
 	if err != nil {
-		fmt.Printf("Error starting listener: %s\n", err.Error())
+		fmt.Println("Error resolving address:", err)
 		return
 	}
-	defer listener.Close()
-	fmt.Println("Listening on port 8484...")
+
+	ln, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		fmt.Println("Error listening:", err)
+		return
+	}
+	defer ln.Close()
 
 	for {
-		// Wait for an incoming connection
-		conn, err := listener.Accept()
+		conn, err := ln.Accept()
 		if err != nil {
-			fmt.Printf("Error accepting connection: %s\n", err.Error())
+			fmt.Println("Error accepting connection:", err)
 			continue
 		}
-		defer conn.Close()
-
-		// Read JSON data from the incoming connection
-		buffer := make([]byte, 1024)
-		n, err := conn.Read(buffer)
-		if err != nil {
-			fmt.Printf("Error reading from connection: %s\n", err.Error())
-			continue
-		}
-
-		// Unmarshal the json data into the Interfaces struct
-		var incomingInterfaces Interfaces
-		err = json.Unmarshal(buffer[:n], &incomingInterfaces)
-		if err != nil {
-			fmt.Printf("Error unmarshalling json data: %s\n", err.Error())
-			continue
-		}
-
-		for _, i := range incomingInterfaces.Interfaces {
-			fmt.Println(i)
-		}
-
-		var interfacenum int
-		fmt.Println("Choose from 0 to 3\n")
-		fmt.Scan(&interfacenum)
-		// Choose an interface from the received array
-		chosenInterface := incomingInterfaces.Interfaces[interfacenum]
-
-		// Connect to port 8485
-		conn, err = net.Dial("tcp", value+":8485")
-		if err != nil {
-			fmt.Printf("Error connecting to port 8485: %s\n", err.Error())
-			continue
-		}
-		defer conn.Close()
-
-		// Send the chosen interface name to port 8485 as a JSON string
-		chosenData := chosen{Interface: chosenInterface}
-		data, err := json.Marshal(chosenData)
-		if err != nil {
-			fmt.Printf("Error marshalling chosen data: %s\n", err.Error())
-			continue
-		}
-
-		_, err = conn.Write(data)
-		if err != nil {
-			fmt.Printf("Error sending data: %s\n", err.Error())
-			continue
-		}
+		go handleConnection(conn)
 	}
+}
+
+func handleConnection(conn net.Conn) {
+	// Read incoming JSON
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println("Error reading:", err)
+		return
+	}
+
+	var packet PacketInfo
+	err = json.Unmarshal(buf[:n], &packet)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return
+	}
+
+	// Create IP packet
+	srcMAC, err := net.ParseMAC(packet.SrcMAC)
+	if err != nil {
+		fmt.Println("Error parsing source MAC:", err)
+		return
+	}
+
+	dstMAC, err := net.ParseMAC(packet.DstMAC)
+	if err != nil {
+		fmt.Println("Error parsing destination MAC:", err)
+		return
+	}
+
+	srcIP := net.ParseIP(packet.SrcIP)
+	if srcIP == nil {
+		fmt.Println("Error parsing source IP:", err)
+		return
+	}
+
+	dstIP := net.ParseIP(packet.DstIP)
+	if dstIP == nil {
+		fmt.Println("Error parsing destination IP:", err)
+		return
+	}
+
+	ipPacket := ip.Packet{
+		Version:  4,
+		IHL:      5,
+		TTL:      uint8(packet.TTL),
+		Protocol: ip.TCP,
+		SrcAddr:  srcIP,
+		DstAddr:  dstIP,
+	}
+
+	// Create Ethernet frame
+	ethFrame := eth.Frame{
+		Src:  srcMAC,
+		Dst:  dstMAC,
+		Type: eth.IPv4,
+		Data: ipPacket.Marshal(),
+	}
+
+	fmt.Println("Sending packet:", ethFrame)
+
+	// Send packet
+	rawConn, err := net.ListenPacket("raw", "eth0")
+	if err != nil {
+		fmt.Println("Error creating raw socket:", err)
+		return
+	}
+	defer rawConn.Close()
+
+	_, err = rawConn.WriteTo(ethFrame.Marshal(), &net.Interface{Index: 1})
+	if err != nil {
+		fmt.Println("Error sending packet:", err)
+		return
+	}
+
+	fmt.Println("Packet sent successfully!")
 }
