@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ghedo/go.pkt/packet"
-	"github.com/ghedo/go.pkt/packet/ipv4"
-	"github.com/ghedo/go.pkt/packet/udp"
-	"github.com/ghedo/go.pkt/pcap"
+	"github.com/Liverpoolfan92/go.pkt/ipv4"
+	"github.com/Liverpoolfan92/go.pkt/packet"
+	"github.com/Liverpoolfan92/go.pkt/pcap"
+	"github.com/Liverpoolfan92/go.pkt/udp"
 )
 
 func main() {

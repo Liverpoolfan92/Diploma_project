@@ -6,8 +6,8 @@ import (
 	"net"
 	"os"
 
-	"github.com/ghedo/go.pkt/icmpv4"
-	"github.com/ghedo/go.pkt/ip"
+	"github.com/Liverpoolfan92/go.pkt/icmpv4"
+	"github.com/Liverpoolfan92/go.pkt/ip"
 )
 
 func main() {

@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ghedo/go.pkt/eth"
-	"github.com/ghedo/go.pkt/ip"
+	"github.com/Liverpoolfan92/go.pkt/eth"
+	"github.com/Liverpoolfan92/go.pkt/ip"
 	"net"
 )
 
