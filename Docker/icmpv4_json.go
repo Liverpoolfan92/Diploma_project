@@ -39,10 +39,12 @@ func handleConnection(conn net.Conn) {
 	// Read the incoming JSON message from the connection
 	decoder := json.NewDecoder(conn)
 	var packetInfo struct {
-		ICMPType uint8  `json:"icmpType"`
-		ICMPCode uint8  `json:"icmpCode"`
-		SrcIP    net.IP `json:"srcIP"`
-		DstIP    net.IP `json:"dstIP"`
+		ICMPType uint8            `json:"icmpType"`
+		ICMPCode uint8            `json:"icmpCode"`
+		SrcIP    net.IP           `json:"srcIP"`
+		DstIP    net.IP           `json:"dstIP"`
+		SrcMAC   net.HardwareAddr `json:"srcMAC"`
+		DstMAC   net.HardwareAddr `json:"dstMAC"`
 	}
 	err := decoder.Decode(&packetInfo)
 	if err != nil {
@@ -53,8 +55,8 @@ func handleConnection(conn net.Conn) {
 
 	// Construct the ICMPv4 packet using go.pkt
 	ethLayer := &layers.Ethernet{
-		SrcMAC:       net.HardwareAddr{0x00, 0x11, 0x22, 0x33, 0x44, 0x55},
-		DstMAC:       net.HardwareAddr{0x00, 0x11, 0x22, 0x33, 0x44, 0x66},
+		SrcMAC:       packetInfo.SrcMAC,
+		DstMAC:       packetInfo.DstMAC,
 		EthernetType: layers.EthernetTypeIPv4,
 	}
 	ipLayer := &layers.IPv4{

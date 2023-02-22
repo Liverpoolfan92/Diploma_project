@@ -6,27 +6,38 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"time"
+	"strings"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
 
-func main() {
-	// Listen on port 8484 for incoming connections
-	addr, err := net.ResolveTCPAddr("tcp", "0.0.0.0:8484")
-	if err != nil {
-		log.Fatal(err)
-	}
-	listener, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Listening on %s", addr)
+type PacketInfo struct {
+	SrcMacStr   string `json:"srcMacStr"`
+	DstMacStr   string `json:"dstMacStr"`
+	SrcIPStr    string `json:"srcIPStr"`
+	DstIPStr    string `json:"dstIPStr"`
+	SrcPortStr  string `json:"srcPortStr"`
+	DstPortStr  string `json:"dstPortStr"`
+	TTLStr      string `json:"ttlStr"`
+	SeqNumStr   string `json:"seqNumStr"`
+	AckNumStr   string `json:"ackNumStr"`
+	FlagsStr    string `json:"flagsStr"`
+	WinSizeStr  string `json:"winSizeStr"`
+	Payload     string `json:"payload"`
+}
 
-	// Loop forever, handling incoming connections
+func main() {
+	// Listen on port 8484 for JSON packets
+	ln, err := net.Listen("tcp", ":8484")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ln.Close()
+
+	// Loop forever, processing incoming packets
 	for {
-		conn, err := listener.Accept()
+		conn, err := ln.Accept()
 		if err != nil {
 			log.Println(err)
 			continue
@@ -36,32 +47,16 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
-	defer conn.Close()
-
-	// Read the incoming JSON message from the connection
+	// Read the incoming JSON packet
 	decoder := json.NewDecoder(conn)
-	var packetInfo struct {
-		SrcMacStr  string `json:"srcMacStr"`
-		DstMacStr  string `json:"dstMacStr"`
-		SrcIPStr   string `json:"srcIPStr"`
-		DstIPStr   string `json:"dstIPStr"`
-		SrcPortStr string `json:"srcPortStr"`
-		DstPortStr string `json:"dstPortStr"`
-		TTLStr     string `json:"ttlStr"`
-		SeqNumStr  string `json:"seqNumStr"`
-		AckNumStr  string `json:"ackNumStr"`
-		FlagsStr   string `json:"flagsStr"`
-		WinSizeStr string `json:"winSizeStr"`
-		Payload    []byte `json:"payload"`
-	}
+	var packetInfo PacketInfo
 	err := decoder.Decode(&packetInfo)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Printf("Received packet info: %+v", packetInfo)
 
-	// Parse the packet information from the JSON message
+	// Parse the source and destination MAC addresses
 	srcMac, err := net.ParseMAC(packetInfo.SrcMacStr)
 	if err != nil {
 		log.Println(err)
@@ -72,16 +67,20 @@ func handleConnection(conn net.Conn) {
 		log.Println(err)
 		return
 	}
+
+	// Parse the source and destination IP addresses
 	srcIP := net.ParseIP(packetInfo.SrcIPStr)
 	if srcIP == nil {
-		log.Printf("Invalid source IP address: %s", packetInfo.SrcIPStr)
+		log.Println("Invalid source IP address:", packetInfo.SrcIPStr)
 		return
 	}
 	dstIP := net.ParseIP(packetInfo.DstIPStr)
 	if dstIP == nil {
-		log.Printf("Invalid destination IP address: %s", packetInfo.DstIPStr)
+		log.Println("Invalid destination IP address:", packetInfo.DstIPStr)
 		return
 	}
+
+	// Parse the source and destination ports
 	srcPort, err := strconv.Atoi(packetInfo.SrcPortStr)
 	if err != nil {
 		log.Println(err)
@@ -92,6 +91,8 @@ func handleConnection(conn net.Conn) {
 		log.Println(err)
 		return
 	}
+
+	// Parse the TTL, sequence number, acknowledgement number, flags, and window size
 	ttl, err := strconv.Atoi(packetInfo.TTLStr)
 	if err != nil {
 		log.Println(err)
@@ -107,58 +108,105 @@ func handleConnection(conn net.Conn) {
 		log.Println(err)
 		return
 	}
-	flags, err := strconv.Atoi(packetInfo.FlagsStr)
-	if err != nil {
-		log.Println(err)
-		return
+	flagsStr := strings.ToLower(packetInfo.FlagsStr)
+	flags := 0
+	if strings.Contains(flagsStr, "ack") {
+		flags |= 1 << 4
+	}
+	if strings.Contains(flagsStr, "psh") {
+		flags |= 1 << 3
+	}
+	if strings.Contains(flagsStr, "rst") {
+		flags |= 1 << 2
+	}
+	if strings.Contains(flagsStr, "syn") {
+		flags |= 1 << 1
+	}
+	if strings.Contains(flagsStr, "fin") {
+		flags |= 1
 	}
 	winSize, err := strconv.Atoi(packetInfo.WinSizeStr)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
-	// Create a TCP packet with the parsed information
+	
+	// Construct the Ethernet layer
+	ethLayer := &layers.Ethernet{
+		SrcMAC:       srcMac,
+		DstMAC:       dstMac,
+		EthernetType: layers.EthernetTypeIPv4,
+	}
+	
+	// Construct the IP layer
 	ipLayer := &layers.IPv4{
-		SrcIP:    srcIP,
-		DstIP:    dstIP,
 		Version:  4,
 		TTL:      uint8(ttl),
 		Protocol: layers.IPProtocolTCP,
+		SrcIP:    srcIP,
+		DstIP:    dstIP,
 	}
+	
+	// Construct the TCP layer
 	tcpLayer := &layers.TCP{
 		SrcPort: layers.TCPPort(srcPort),
 		DstPort: layers.TCPPort(dstPort),
 		Seq:     uint32(seqNum),
 		Ack:     uint32(ackNum),
 		Window:  uint16(winSize),
-		ACK:     flags&0x10 != 0,
-		SYN:     flags&0x02 != 0,
-		FIN:     flags&0x01 != 0,
-		RST:     flags&0x04 != 0,
+		Flags:   layers.TCPFlags(flags),
 	}
-	tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-	payload := gopacket.Payload(packetInfo.Payload)
-	packet := gopacket.NewSerializeBuffer()
-	err = gopacket.SerializeLayers(packet, gopacket.SerializeOptions{},
-		ipLayer, tcpLayer, payload)
+	
+	// Set the TCP layer's payload
+	if packetInfo.Payload != "" {
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		payload := []byte(packetInfo.Payload)
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		err = tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+	}
+	
+	// Construct the packet with all layers
+	buffer := gopacket.NewSerializeBuffer()
+	opts := gopacket.SerializeOptions{
+		FixLengths:       true,
+		ComputeChecksums: true,
+	}
+	err = gopacket.SerializeLayers(buffer, opts,
+		ethLayer,
+		ipLayer,
+		tcpLayer,
+		gopacket.Payload([]byte(packetInfo.Payload)),
+	)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
-	// Send the packet
-	log.Println("Sending packet")
-	conn, err = net.Dial("ip4:tcp", dstIP.String())
+	
+	// Send the packet over the wire
+	rawPacketData := buffer.Bytes()
+	conn, err := net.Dial("raw", "eth0")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer conn.Close()
-	_, err = conn.Write(packet.Bytes())
+	_, err = conn.Write(rawPacketData)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println("Packet sent")
-}
+	
+	// Print a confirmation message
+	fmt.Println("Sent packet:")
+	fmt.Println(ethLayer)
+	fmt.Println(ipLayer)
+	fmt.Println(tcpLayer)
+	
