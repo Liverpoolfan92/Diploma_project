@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "g4L+9dS0sFlXL/rJU4FP3xJZz68SzG9384ws6ZhwgfQ1vSN9Fm/VEln0JMSCdhTn47ZR1TQNxHar1mPllpeM9w==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\icmp_test\\icmp_test.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\zhele\\.nuget\\packages\\newtonsoft.json\\13.0.2\\newtonsoft.json.13.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}

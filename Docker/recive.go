@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Liverpoolfan92/go.pkt/eth"
-	"github.com/Liverpoolfan92/go.pkt/ip"
 	"net"
+
+	"github.com/google/gopacket/eth"
+	"github.com/google/gopacket/ip"
 )
 
 type PacketInfo struct {

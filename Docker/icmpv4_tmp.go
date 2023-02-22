@@ -6,8 +6,8 @@ import (
 	"net"
 	"os"
 
-	"github.com/Liverpoolfan92/go.pkt/icmpv4"
-	"github.com/Liverpoolfan92/go.pkt/ip"
+	"github.com/google/gopacket/icmpv4"
+	"github.com/google/gopacket/ip"
 )
 
 func main() {
