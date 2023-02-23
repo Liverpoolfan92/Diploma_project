@@ -6,8 +6,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/google/gopacket/icmpv4"
-	"github.com/google/gopacket/ip"
+	"github.com/google/gopacket/layers"
 )
 
 func main() {

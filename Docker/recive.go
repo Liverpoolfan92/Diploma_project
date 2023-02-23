@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/google/gopacket/eth"
-	"github.com/google/gopacket/ip"
+	"github.com/google/gopacket/layers"
 )
 
 type PacketInfo struct {
