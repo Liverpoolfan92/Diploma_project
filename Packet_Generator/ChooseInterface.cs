@@ -50,7 +50,7 @@ namespace NetworkInterfacesDemo
             var ipaddr = GetIpAddressByInterfaceName(selectedInterfaceName);
 
             // Run Docker container in user-defined network
-            string dockerCommand = $"docker run -dit --rm --name PacketGenerator --env VAR1={ipaddr} --network {networkName} test_1 bash";
+            string dockerCommand = $"docker run -dit --rm --name PacketGenerator -p 8484:8484 -p 8485:8485 --env VAR1={ipaddr} --network {networkName} test_1 bash";
             ExecuteDockerCommand(dockerCommand);
 
             /*// Switch to another form

@@ -13,18 +13,18 @@ import (
 )
 
 type PacketInfo struct {
-	SrcMacStr   string `json:"srcMacStr"`
-	DstMacStr   string `json:"dstMacStr"`
-	SrcIPStr    string `json:"srcIPStr"`
-	DstIPStr    string `json:"dstIPStr"`
-	SrcPortStr  string `json:"srcPortStr"`
-	DstPortStr  string `json:"dstPortStr"`
-	TTLStr      string `json:"ttlStr"`
-	SeqNumStr   string `json:"seqNumStr"`
-	AckNumStr   string `json:"ackNumStr"`
-	FlagsStr    string `json:"flagsStr"`
-	WinSizeStr  string `json:"winSizeStr"`
-	Payload     string `json:"payload"`
+	SrcMacStr  string `json:"srcMacStr"`
+	DstMacStr  string `json:"dstMacStr"`
+	SrcIPStr   string `json:"srcIPStr"`
+	DstIPStr   string `json:"dstIPStr"`
+	SrcPortStr string `json:"srcPortStr"`
+	DstPortStr string `json:"dstPortStr"`
+	TTLStr     string `json:"ttlStr"`
+	SeqNumStr  string `json:"seqNumStr"`
+	AckNumStr  string `json:"ackNumStr"`
+	FlagsStr   string `json:"flagsStr"`
+	WinSizeStr string `json:"winSizeStr"`
+	Payload    string `json:"payload"`
 }
 
 func main() {
@@ -130,14 +130,14 @@ func handleConnection(conn net.Conn) {
 		log.Println(err)
 		return
 	}
-	
+
 	// Construct the Ethernet layer
 	ethLayer := &layers.Ethernet{
 		SrcMAC:       srcMac,
 		DstMAC:       dstMac,
 		EthernetType: layers.EthernetTypeIPv4,
 	}
-	
+
 	// Construct the IP layer
 	ipLayer := &layers.IPv4{
 		Version:  4,
@@ -146,7 +146,7 @@ func handleConnection(conn net.Conn) {
 		SrcIP:    srcIP,
 		DstIP:    dstIP,
 	}
-	
+
 	// Construct the TCP layer
 	tcpLayer := &layers.TCP{
 		SrcPort: layers.TCPPort(srcPort),
@@ -156,7 +156,7 @@ func handleConnection(conn net.Conn) {
 		Window:  uint16(winSize),
 		Flags:   layers.TCPFlags(flags),
 	}
-	
+
 	// Set the TCP layer's payload
 	if packetInfo.Payload != "" {
 		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
@@ -172,7 +172,7 @@ func handleConnection(conn net.Conn) {
 		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
 		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
 	}
-	
+
 	// Construct the packet with all layers
 	buffer := gopacket.NewSerializeBuffer()
 	opts := gopacket.SerializeOptions{
@@ -189,7 +189,7 @@ func handleConnection(conn net.Conn) {
 		log.Println(err)
 		return
 	}
-	
+
 	// Send the packet over the wire
 	rawPacketData := buffer.Bytes()
 	conn, err := net.Dial("raw", "eth0")
@@ -203,10 +203,10 @@ func handleConnection(conn net.Conn) {
 		log.Println(err)
 		return
 	}
-	
+
 	// Print a confirmation message
 	fmt.Println("Sent packet:")
 	fmt.Println(ethLayer)
 	fmt.Println(ipLayer)
 	fmt.Println(tcpLayer)
-	
+}

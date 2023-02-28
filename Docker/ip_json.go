@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net"
 	"time"
 
@@ -10,93 +10,61 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-func main() {
-	// Listen on port 8484 for incoming connections
-	addr, err := net.ResolveTCPAddr("tcp", "0.0.0.0:8484")
-	if err != nil {
-		log.Fatal(err)
-	}
-	listener, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Listening on %s", addr)
-
-	// Loop forever, handling incoming connections
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		go handleConnection(conn)
-	}
+type PacketData struct {
+	SrcMac  string `json:"SrcMac"`
+	DstMac  string `json:"DstMac"`
+	SrcIp   string `json:"SrcIp"`
+	DstIp   string `json:"DstIp"`
+	SrcPort int    `json:"SrcPort"`
+	DstPort int    `json:"DstPort"`
+	Payload string `json:"Payload"`
+	Ttl     int    `json:"Ttl"`
 }
 
-func handleConnection(conn net.Conn) {
+func main() {
+	// Connect to the TCP server running on the localhost
+	conn, err := net.Dial("tcp", "localhost:8484")
+	if err != nil {
+		panic(err)
+	}
 	defer conn.Close()
 
-	// Read the incoming JSON message from the connection
-	decoder := json.NewDecoder(conn)
-	var packetInfo struct {
-		SrcMAC  net.HardwareAddr `json:"srcMAC"`
-		DstMAC  net.HardwareAddr `json:"dstMAC"`
-		SrcIP   net.IP           `json:"srcIP"`
-		DstIP   net.IP           `json:"dstIP"`
-		SrcPort uint16           `json:"srcPort"`
-		DstPort uint16           `json:"dstPort"`
-		Payload []byte           `json:"payload"`
-		TTL     uint8            `json:"ttl"`
-	}
-	err := decoder.Decode(&packetInfo)
+	// Read the JSON data from the TCP stream
+	var packetData PacketData
+	err = json.NewDecoder(conn).Decode(&packetData)
 	if err != nil {
-		log.Println(err)
-		return
+		panic(err)
 	}
-	log.Printf("Received packet info: %+v", packetInfo)
 
-	// Construct the IP packet using gopacket
-	ethLayer := &layers.Ethernet{
-		SrcMAC:       packetInfo.SrcMAC,
-		DstMAC:       packetInfo.DstMAC,
-		EthernetType: layers.EthernetTypeIPv4,
-	}
+	// Create a new IP packet
+	ipPacket := gopacket.NewSerializeBuffer()
 	ipLayer := &layers.IPv4{
+		SrcIP:    net.ParseIP(packetData.SrcIp),
+		DstIP:    net.ParseIP(packetData.DstIp),
 		Version:  4,
-		TTL:      packetInfo.TTL,
+		Length:   20,
+		TTL:      uint8(packetData.Ttl),
 		Protocol: layers.IPProtocolTCP,
-		SrcIP:    packetInfo.SrcIP,
-		DstIP:    packetInfo.DstIP,
 	}
+	// Add a TCP layer
 	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(packetInfo.SrcPort),
-		DstPort: layers.TCPPort(packetInfo.DstPort),
+		SrcPort: layers.TCPPort(packetData.SrcPort),
+		DstPort: layers.TCPPort(packetData.DstPort),
+		SYN:     true,
+		Window:  14600,
 	}
-	if len(packetInfo.Payload) > 0 {
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		tcpLayer.Payload = packetInfo.Payload
-	}
-
-	buffer := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
-
-	err = gopacket.SerializeLayers(buffer, opts, ethLayer, ipLayer, tcpLayer)
+	// Set the TCP payload
+	payload := []byte(packetData.Payload)
+	tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+	err = gopacket.SerializeLayers(ipPacket, gopacket.SerializeOptions{},
+		ipLayer, tcpLayer, gopacket.Payload(payload))
 	if err != nil {
-		log.Println(err)
-		return
+		panic(err)
 	}
 
-	// Send the IP packet
-	packetData := buffer.Bytes()
-	conn.SetWriteDeadline(time.Now().Add(5 * time.Second)) // Set a timeout for the write
-	_, err = conn.Write(packetData)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Printf("Sent IP packet: % X", packetData)
+	// Write the packet to the console
+	fmt.Printf("%v\n", ipPacket)
+
+	// Wait for a second
+	time.Sleep(time.Second)
 }

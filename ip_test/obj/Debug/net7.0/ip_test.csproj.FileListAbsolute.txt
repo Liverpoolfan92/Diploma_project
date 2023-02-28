@@ -1,0 +1,17 @@
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\bin\Debug\net7.0\ip_test.exe
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\bin\Debug\net7.0\ip_test.deps.json
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\bin\Debug\net7.0\ip_test.runtimeconfig.json
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\bin\Debug\net7.0\ip_test.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\bin\Debug\net7.0\ip_test.pdb
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.csproj.AssemblyReference.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.AssemblyInfoInputs.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.AssemblyInfo.cs
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.csproj.CoreCompileInputs.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.csproj.CopyComplete
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\refint\ip_test.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.pdb
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ip_test.genruntimeconfig.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\ip_test\obj\Debug\net7.0\ref\ip_test.dll

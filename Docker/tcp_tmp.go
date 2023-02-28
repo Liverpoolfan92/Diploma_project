@@ -128,20 +128,20 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Invalid TCP flags")
 		return
 	}
-	
+
 	winSize, err := strconv.Atoi(winSizeStr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to parse window size: %v", err)
 		return
 	}
-	
+
 	// Create packet
 	buf := gopacket.NewSerializeBuffer()
 	opts := gopacket.SerializeOptions{
 		FixLengths:       true,
 		ComputeChecksums: true,
 	}
-	
+
 	// Ethernet layer
 	ethLayer := &layers.Ethernet{
 		SrcMAC:       srcMac,
@@ -152,7 +152,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to serialize Ethernet layer: %v", err)
 		return
 	}
-	
+
 	// IP layer
 	ipLayer := &layers.IPv4{
 		Version:  4,
@@ -165,7 +165,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to serialize IP layer: %v", err)
 		return
 	}
-	
+
 	// TCP layer
 	tcpLayer := &layers.TCP{
 		SrcPort: layers.TCPPort(srcPort),
@@ -183,7 +183,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to serialize TCP layer: %v", err)
 		return
 	}
-	
+
 	// Payload layer
 	if len(payload) > 0 {
 		if err := gopacket.SerializeLayers(buf, opts, gopacket.Payload(payload)); err != nil {
@@ -191,9 +191,9 @@ func main() {
 			return
 		}
 	}
-	
+
 	// Send packet
 	packetData := buf.Bytes()
 	fmt.Printf("Sending packet with length %d\n", len(packetData))
 	fmt.Printf("Packet data: %v\n", packetData)
-	
+}
