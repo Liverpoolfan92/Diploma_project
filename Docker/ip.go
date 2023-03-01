@@ -22,7 +22,7 @@ type PacketData struct {
 
 func main() {
 	// Dial an Ethernet connection
-	conn, err := net.Dial("unix", "/var/run/dpdk/rte/dpdk0")
+	conn, err := net.Dial("unix", "eth0")
 	if err != nil {
 		panic(err)
 	}

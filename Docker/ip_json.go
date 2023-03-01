@@ -3,10 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
+	"os"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 )
 
 type PacketData struct {
@@ -42,36 +45,57 @@ func main() {
 			panic(err)
 		}
 
-		// Create a new IP packet
-		ipPacket := gopacket.NewSerializeBuffer()
-		ipLayer := &layers.IPv4{
-			SrcIP:    net.ParseIP(packetData.SrcIp),
-			DstIP:    net.ParseIP(packetData.DstIp),
+		// Open device for sending packets
+		handle, err := pcap.OpenLive("eth0", 65535, true, pcap.BlockForever)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer handle.Close()
+
+		// Create Ethernet layer
+		eth := &layers.Ethernet{
+			SrcMAC:       net.HardwareAddr(packetData.SrcMac),
+			DstMAC:       net.HardwareAddr(packetData.DstMac),
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+
+		// Create IP layer
+		ip := &layers.IPv4{
 			Version:  4,
-			Length:   20,
 			TTL:      uint8(packetData.Ttl),
+			SrcIP:    net.IP(packetData.SrcIp),
+			DstIP:    net.IP(packetData.DstIp),
 			Protocol: layers.IPProtocolTCP,
 		}
-		// Add a TCP layer
-		tcpLayer := &layers.TCP{
+
+		// Create TCP layer
+		tcp := &layers.TCP{
 			SrcPort: layers.TCPPort(packetData.SrcPort),
 			DstPort: layers.TCPPort(packetData.DstPort),
+			Seq:     100,
 			SYN:     true,
-			Window:  14600,
 		}
-		// Set the TCP payload
-		payload := []byte(packetData.Payload)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		err = gopacket.SerializeLayers(ipPacket, gopacket.SerializeOptions{},
-			ipLayer, tcpLayer, gopacket.Payload(payload))
+		tcp.SetNetworkLayerForChecksum(ip)
+
+		// Create packet with all the layers
+		buffer := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{
+			ComputeChecksums: true,
+			FixLengths:       true,
+		}
+		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
+		}
+		outgoingPacket := buffer.Bytes()
+
+		// Write the packet to the network interface
+		err = handle.WritePacketData(outgoingPacket)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error sending packet: %v\n", err)
+			os.Exit(1)
 		}
 
-		// Write the packet to the console
-		fmt.Printf("%v\n", ipPacket)
-
-		// Close the client connection
-		conn.Close()
+		fmt.Println("Packet sent successfully!")
 	}
 }
