@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 
 	"github.com/google/gopacket"
@@ -20,45 +21,35 @@ type PacketData struct {
 }
 
 func main() {
-	// Get the network interface
-	iface, err := net.InterfaceByName("eth0")
+	// Dial an Ethernet connection
+	conn, err := net.Dial("unix", "/var/run/dpdk/rte/dpdk0")
 	if err != nil {
 		panic(err)
 	}
-
-	// Get the interface's hardware address
-	srcMac := iface.HardwareAddr
-
-	// Listen on port 8484 for incoming connections
-	listener, err := net.Listen("tcp", ":8484")
-	if err != nil {
-		panic(err)
-	}
-	defer listener.Close()
+	defer conn.Close()
 
 	for {
 		// Wait for a client to connect
-		conn, err := listener.Accept()
+		listener, err := net.Listen("tcp", ":8484")
+		if err != nil {
+			panic(err)
+		}
+		defer listener.Close()
+
+		clientConn, err := listener.Accept()
 		if err != nil {
 			panic(err)
 		}
 
 		// Parse the JSON data sent by the client
 		var packetData PacketData
-		err = json.NewDecoder(conn).Decode(&packetData)
+		err = json.NewDecoder(clientConn).Decode(&packetData)
 		if err != nil {
 			panic(err)
 		}
 
-		// Create a new Ethernet packet
-		ethPacket := gopacket.NewSerializeBuffer()
-		ethLayer := &layers.Ethernet{
-			SrcMAC:       srcMac,
-			DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, // Broadcast address
-			EthernetType: layers.EthernetTypeIPv4,
-		}
-
 		// Create a new IP packet
+		ipPacket := gopacket.NewSerializeBuffer()
 		ipLayer := &layers.IPv4{
 			SrcIP:    net.ParseIP(packetData.SrcIp),
 			DstIP:    net.ParseIP(packetData.DstIp),
@@ -67,7 +58,6 @@ func main() {
 			TTL:      uint8(packetData.Ttl),
 			Protocol: layers.IPProtocolTCP,
 		}
-
 		// Add a TCP layer
 		tcpLayer := &layers.TCP{
 			SrcPort: layers.TCPPort(packetData.SrcPort),
@@ -75,28 +65,30 @@ func main() {
 			SYN:     true,
 			Window:  14600,
 		}
-
 		// Set the TCP payload
 		payload := []byte(packetData.Payload)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
 
-		// Serialize the layers into the Ethernet packet
-		err = gopacket.SerializeLayers(ethPacket, gopacket.SerializeOptions{},
+		// Add an Ethernet layer
+		ethLayer := &layers.Ethernet{
+			SrcMAC:       net.HardwareAddr(packetData.SrcMac),
+			DstMAC:       net.HardwareAddr(packetData.DstMac),
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		err = gopacket.SerializeLayers(ipPacket, gopacket.SerializeOptions{},
 			ethLayer, ipLayer, tcpLayer, gopacket.Payload(payload))
 		if err != nil {
 			panic(err)
 		}
 
 		// Send the packet
-		rawConn, err := net.ListenPacket("eth0", layers.EthernetTypeIPv4.String())
+		_, err = conn.Write(ipPacket.Bytes())
 		if err != nil {
 			panic(err)
 		}
-		defer rawConn.Close()
 
-		_, err = rawConn.WriteTo(ethPacket.Bytes(), &net.IPAddr{})
-		if err != nil {
-			panic(err)
-		}
+		fmt.Println("Packet sent")
+
 	}
 }
