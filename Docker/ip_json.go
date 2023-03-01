@@ -45,6 +45,18 @@ func main() {
 			panic(err)
 		}
 
+		srcmac, err := net.ParseMAC(packetData.SrcMac)
+		if err != nil {
+			fmt.Println("Error parsing MAC address:", err)
+			return
+		}
+
+		dstmac, err := net.ParseMAC(packetData.DstMac)
+		if err != nil {
+			fmt.Println("Error parsing MAC address:", err)
+			return
+		}
+
 		// Open device for sending packets
 		handle, err := pcap.OpenLive("eth0", 65535, true, pcap.BlockForever)
 		if err != nil {
@@ -54,8 +66,8 @@ func main() {
 
 		// Create Ethernet layer
 		eth := &layers.Ethernet{
-			SrcMAC:       net.HardwareAddr(packetData.SrcMac),
-			DstMAC:       net.HardwareAddr(packetData.DstMac),
+			SrcMAC:       srcmac,
+			DstMAC:       dstmac,
 			EthernetType: layers.EthernetTypeIPv4,
 		}
 
