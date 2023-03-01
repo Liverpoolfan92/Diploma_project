@@ -12,7 +12,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type PacketData struct {
+type PacketIP struct {
 	SrcMac  string `json:"SrcMac"`
 	DstMac  string `json:"DstMac"`
 	SrcIp   string `json:"SrcIp"`
@@ -39,32 +39,32 @@ func main() {
 		}
 
 		// Parse the JSON data sent by the client
-		var packetData PacketData
-		err = json.NewDecoder(conn).Decode(&packetData)
+		var packetIp PacketIP
+		err = json.NewDecoder(conn).Decode(&packetIp)
 		if err != nil {
 			panic(err)
 		}
 
 		// Parse the source and destination IP addresses
-		srcIP := net.ParseIP(packetData.SrcIp)
+		srcIP := net.ParseIP(packetIp.SrcIp)
 		if srcIP == nil {
-			log.Println("Invalid source IP address:", packetData.SrcIp)
+			log.Println("Invalid source IP address:", packetIp.SrcIp)
 			return
 		}
-		dstIP := net.ParseIP(packetData.DstIp)
+		dstIP := net.ParseIP(packetIp.DstIp)
 		if dstIP == nil {
-			log.Println("Invalid destination IP address:", packetData.DstIp)
+			log.Println("Invalid destination IP address:", packetIp.DstIp)
 			return
 		}
 
 		// Parse the source and destination MAC address
-		srcmac, err := net.ParseMAC(packetData.SrcMac)
+		srcmac, err := net.ParseMAC(packetIp.SrcMac)
 		if err != nil {
 			fmt.Println("Error parsing MAC address:", err)
 			return
 		}
 
-		dstmac, err := net.ParseMAC(packetData.DstMac)
+		dstmac, err := net.ParseMAC(packetIp.DstMac)
 		if err != nil {
 			fmt.Println("Error parsing MAC address:", err)
 			return
@@ -86,7 +86,7 @@ func main() {
 		// Create IP layer
 		ip := &layers.IPv4{
 			Version:  4,
-			TTL:      uint8(packetData.TTL),
+			TTL:      uint8(packetIp.TTL),
 			SrcIP:    srcIP,
 			DstIP:    dstIP,
 			Protocol: layers.IPProtocolTCP,
@@ -94,8 +94,8 @@ func main() {
 
 		// Create TCP layer
 		tcp := &layers.TCP{
-			SrcPort: layers.TCPPort(packetData.SrcPort),
-			DstPort: layers.TCPPort(packetData.DstPort),
+			SrcPort: layers.TCPPort(packetIp.SrcPort),
+			DstPort: layers.TCPPort(packetIp.DstPort),
 			Seq:     100,
 			SYN:     true,
 		}
