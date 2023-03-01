@@ -20,7 +20,7 @@ type PacketData struct {
 	SrcPort int    `json:"SrcPort"`
 	DstPort int    `json:"DstPort"`
 	Payload string `json:"Payload"`
-	TTL     int    `json:"Ttl"`
+	TTL     int    `json:"TTL"`
 }
 
 func main() {

@@ -13,18 +13,18 @@ import (
 )
 
 type PacketTCP struct {
-	SrcMac  string `json:"srcMac"`
-	DstMac  string `json:"dstMac"`
-	SrcIP   string `json:"srcIP"`
-	DstIP   string `json:"dstIP"`
-	SrcPort int    `json:"srcPort"`
-	DstPort int    `json:"dstPort"`
-	TTL     int    `json:"ttl"`
-	SeqNum  int    `json:"seqNum"`
-	AckNum  int    `json:"ackNum"`
-	Flags   string `json:"flags"`
-	WinSize int    `json:"winSize"`
-	Payload string `json:"payload"`
+	SrcMac  string `json:"SrcMac"`
+	DstMac  string `json:"DstMac"`
+	SrcIP   string `json:"SrcIP"`
+	DstIP   string `json:"DstIP"`
+	SrcPort int    `json:"SrcPort"`
+	DstPort int    `json:"DstPort"`
+	TTL     int    `json:"TTL"`
+	SeqNum  int    `json:"SeqNum"`
+	AckNum  int    `json:"AckNum"`
+	Flags   string `json:"Flags"`
+	WinSize int    `json:"WinSize"`
+	Payload string `json:"Payload"`
 }
 
 func main() {
