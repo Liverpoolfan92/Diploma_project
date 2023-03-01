@@ -24,7 +24,7 @@ type PacketData struct {
 
 func main() {
 	// Open a TCP client connection to the server on port 8484
-	conn, err := net.Dial("tcp", "localhost:8484")
+	conn, err := net.Dial("tcp", "0.0.0.0:8484")
 	if err != nil {
 		log.Fatal(err)
 	}
