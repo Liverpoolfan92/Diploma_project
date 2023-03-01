@@ -2,10 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net"
-	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -23,66 +20,83 @@ type PacketData struct {
 }
 
 func main() {
-	// Open a TCP client connection to the server on port 8484
-	conn, err := net.Dial("tcp", "0.0.0.0:8484")
+	// Get the network interface
+	iface, err := net.InterfaceByName("eth0")
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-
-	// Receive the JSON data from the server
-	decoder := json.NewDecoder(conn)
-	var packetData PacketData
-	err = decoder.Decode(&packetData)
-	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	// Use the parsed data to construct an Ethernet frame with an IP layer and a TCP layer
-	ethLayer := &layers.Ethernet{
-		SrcMAC:       net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-		DstMAC:       net.HardwareAddr{0x00, 0x11, 0x22, 0x33, 0x44, 0x55},
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-	ipLayer := &layers.IPv4{
-		Version:  4,
-		TTL:      uint8(packetData.Ttl),
-		Protocol: layers.IPProtocolTCP,
-		SrcIP:    net.ParseIP(packetData.SrcIp),
-		DstIP:    net.ParseIP(packetData.DstIp),
-	}
-	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(packetData.SrcPort),
-		DstPort: layers.TCPPort(packetData.DstPort),
-		SYN:     true,
-	}
+	// Get the interface's hardware address
+	srcMac := iface.HardwareAddr
 
-	// Set the payload of the TCP layer to the payload specified in the JSON data
-	payload := []byte(packetData.Payload)
-	tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-	tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-	tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-	tcpLayer.Payload = payload
+	// Listen on port 8484 for incoming connections
+	listener, err := net.Listen("tcp", ":8484")
+	if err != nil {
+		panic(err)
+	}
+	defer listener.Close()
 
-	// Serialize the Ethernet frame with the IP and TCP layers
-	buffer := gopacket.NewSerializeBuffer()
-	options := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
-	err = gopacket.SerializeLayers(buffer, options, ethLayer, ipLayer, tcpLayer)
-	if err != nil {
-		log.Fatal(err)
-	}
+	for {
+		// Wait for a client to connect
+		conn, err := listener.Accept()
+		if err != nil {
+			panic(err)
+		}
 
-	// Send the constructed packet over the network
-	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
-	if err != nil {
-		log.Fatal(err)
+		// Parse the JSON data sent by the client
+		var packetData PacketData
+		err = json.NewDecoder(conn).Decode(&packetData)
+		if err != nil {
+			panic(err)
+		}
+
+		// Create a new Ethernet packet
+		ethPacket := gopacket.NewSerializeBuffer()
+		ethLayer := &layers.Ethernet{
+			SrcMAC:       srcMac,
+			DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, // Broadcast address
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+
+		// Create a new IP packet
+		ipLayer := &layers.IPv4{
+			SrcIP:    net.ParseIP(packetData.SrcIp),
+			DstIP:    net.ParseIP(packetData.DstIp),
+			Version:  4,
+			Length:   20,
+			TTL:      uint8(packetData.Ttl),
+			Protocol: layers.IPProtocolTCP,
+		}
+
+		// Add a TCP layer
+		tcpLayer := &layers.TCP{
+			SrcPort: layers.TCPPort(packetData.SrcPort),
+			DstPort: layers.TCPPort(packetData.DstPort),
+			SYN:     true,
+			Window:  14600,
+		}
+
+		// Set the TCP payload
+		payload := []byte(packetData.Payload)
+		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+
+		// Serialize the layers into the Ethernet packet
+		err = gopacket.SerializeLayers(ethPacket, gopacket.SerializeOptions{},
+			ethLayer, ipLayer, tcpLayer, gopacket.Payload(payload))
+		if err != nil {
+			panic(err)
+		}
+
+		// Send the packet
+		rawConn, err := net.ListenPacket("eth0", layers.EthernetTypeIPv4.String())
+		if err != nil {
+			panic(err)
+		}
+		defer rawConn.Close()
+
+		_, err = rawConn.WriteTo(ethPacket.Bytes(), &net.IPAddr{})
+		if err != nil {
+			panic(err)
+		}
 	}
-	_, err = conn.Write(buffer.Bytes())
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Packet sent successfully!")
 }
