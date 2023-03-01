@@ -52,12 +52,12 @@ func main() {
 		// Parse the source and destination IP addresses
 		srcIP := net.ParseIP(packettcp.SrcIP)
 		if srcIP == nil {
-			log.Println("Invalid source IP address:", packettcp.SrcIP)
+			log.Println("Invalid source IP address:%v", packettcp.SrcIP)
 			return
 		}
 		dstIP := net.ParseIP(packettcp.DstIP)
 		if dstIP == nil {
-			log.Println("Invalid destination IP address:", packettcp.DstIP)
+			log.Println("Invalid destination IP address:%v", packettcp.DstIP)
 			return
 		}
 
