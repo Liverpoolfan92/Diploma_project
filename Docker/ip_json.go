@@ -63,8 +63,8 @@ func main() {
 		ip := &layers.IPv4{
 			Version:  4,
 			TTL:      uint8(packetData.Ttl),
-			SrcIP:    net.IP(packetData.SrcIp),
-			DstIP:    net.IP(packetData.DstIp),
+			SrcIP:    net.ParseIP(packetData.SrcIp),
+			DstIP:    net.ParseIP(packetData.DstIp),
 			Protocol: layers.IPProtocolTCP,
 		}
 
