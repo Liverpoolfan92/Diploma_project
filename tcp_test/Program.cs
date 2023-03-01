@@ -10,40 +10,40 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             // Prompt the user for input
-            Console.WriteLine("Enter the source MAC address:");
+            Console.Write("SrcMAC: ");
             string srcMacStr = Console.ReadLine();
 
-            Console.WriteLine("Enter the destination MAC address:");
+            Console.Write("DstMAC: ");
             string dstMacStr = Console.ReadLine();
 
-            Console.WriteLine("Enter the source IP address:");
+            Console.Write("SrcIP: ");
             string srcIPStr = Console.ReadLine();
 
-            Console.WriteLine("Enter the destination IP address:");
+            Console.Write("DstIP: ");
             string dstIPStr = Console.ReadLine();
 
-            Console.WriteLine("Enter the source port:");
+            Console.Write("SrcPort: ");
             int srcPort = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the destination port:");
+            Console.Write("DstPort: ");
             int dstPort = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the TTL:");
+            Console.Write("TTL: ");
             int ttl = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the sequence number:");
+            Console.Write("SeqNum: ");
             int seqNum = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the acknowledgement number:");
+            Console.Write("AckNum: ");
             int ackNum = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the flags:");
+            Console.Write("Flags: ");
             string flagsStr = Console.ReadLine();
 
-            Console.WriteLine("Enter the window size:");
+            Console.Write("WinSize: ");
             int winSize = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the payload:");
+            Console.Write("Payload: ");
             string payload = Console.ReadLine();
 
             // Create a JSON object from the input

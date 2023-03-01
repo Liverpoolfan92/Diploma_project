@@ -1,0 +1,17 @@
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\bin\Debug\net7.0\tcp_test.exe
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\bin\Debug\net7.0\tcp_test.deps.json
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\bin\Debug\net7.0\tcp_test.runtimeconfig.json
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\bin\Debug\net7.0\tcp_test.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\bin\Debug\net7.0\tcp_test.pdb
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.csproj.AssemblyReference.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.AssemblyInfoInputs.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.AssemblyInfo.cs
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.csproj.CoreCompileInputs.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.csproj.CopyComplete
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\refint\tcp_test.dll
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.pdb
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\tcp_test.genruntimeconfig.cache
+C:\Users\zhele\OneDrive\Documents\GitHub\test_go\tcp_test\obj\Debug\net7.0\ref\tcp_test.dll
