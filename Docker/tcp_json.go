@@ -5,208 +5,131 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
-	"strings"
+	"os"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 )
 
-type PacketInfo struct {
-	SrcMacStr  string `json:"srcMacStr"`
-	DstMacStr  string `json:"dstMacStr"`
-	SrcIPStr   string `json:"srcIPStr"`
-	DstIPStr   string `json:"dstIPStr"`
-	SrcPortStr string `json:"srcPortStr"`
-	DstPortStr string `json:"dstPortStr"`
-	TTLStr     string `json:"ttlStr"`
-	SeqNumStr  string `json:"seqNumStr"`
-	AckNumStr  string `json:"ackNumStr"`
-	FlagsStr   string `json:"flagsStr"`
-	WinSizeStr string `json:"winSizeStr"`
-	Payload    string `json:"payload"`
+type PacketTCP struct {
+	SrcMac  string `json:"srcMac"`
+	DstMac  string `json:"dstMac"`
+	SrcIP   string `json:"srcIP"`
+	DstIP   string `json:"dstIP"`
+	SrcPort int    `json:"srcPort"`
+	DstPort int    `json:"dstPort"`
+	TTL     int    `json:"ttl"`
+	SeqNum  int    `json:"seqNum"`
+	AckNum  int    `json:"ackNum"`
+	Flags   string `json:"flags"`
+	WinSize int    `json:"winSize"`
+	Payload string `json:"payload"`
 }
 
 func main() {
-	// Listen on port 8484 for JSON packets
-	ln, err := net.Listen("tcp", ":8484")
+	// Listen on port 8484 for incoming connections
+	listener, err := net.Listen("tcp", ":8484")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	defer ln.Close()
+	defer listener.Close()
 
-	// Loop forever, processing incoming packets
 	for {
-		conn, err := ln.Accept()
+		// Wait for a client to connect
+		conn, err := listener.Accept()
 		if err != nil {
-			log.Println(err)
-			continue
+			panic(err)
 		}
-		go handleConnection(conn)
-	}
-}
 
-func handleConnection(conn net.Conn) {
-	// Read the incoming JSON packet
-	decoder := json.NewDecoder(conn)
-	var packetInfo PacketInfo
-	err := decoder.Decode(&packetInfo)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// Parse the source and destination MAC addresses
-	srcMac, err := net.ParseMAC(packetInfo.SrcMacStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	dstMac, err := net.ParseMAC(packetInfo.DstMacStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// Parse the source and destination IP addresses
-	srcIP := net.ParseIP(packetInfo.SrcIPStr)
-	if srcIP == nil {
-		log.Println("Invalid source IP address:", packetInfo.SrcIPStr)
-		return
-	}
-	dstIP := net.ParseIP(packetInfo.DstIPStr)
-	if dstIP == nil {
-		log.Println("Invalid destination IP address:", packetInfo.DstIPStr)
-		return
-	}
-
-	// Parse the source and destination ports
-	srcPort, err := strconv.Atoi(packetInfo.SrcPortStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	dstPort, err := strconv.Atoi(packetInfo.DstPortStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// Parse the TTL, sequence number, acknowledgement number, flags, and window size
-	ttl, err := strconv.Atoi(packetInfo.TTLStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	seqNum, err := strconv.Atoi(packetInfo.SeqNumStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	ackNum, err := strconv.Atoi(packetInfo.AckNumStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	flagsStr := strings.ToLower(packetInfo.FlagsStr)
-	flags := 0
-	if strings.Contains(flagsStr, "ack") {
-		flags |= 1 << 4
-	}
-	if strings.Contains(flagsStr, "psh") {
-		flags |= 1 << 3
-	}
-	if strings.Contains(flagsStr, "rst") {
-		flags |= 1 << 2
-	}
-	if strings.Contains(flagsStr, "syn") {
-		flags |= 1 << 1
-	}
-	if strings.Contains(flagsStr, "fin") {
-		flags |= 1
-	}
-	winSize, err := strconv.Atoi(packetInfo.WinSizeStr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// Construct the Ethernet layer
-	ethLayer := &layers.Ethernet{
-		SrcMAC:       srcMac,
-		DstMAC:       dstMac,
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-
-	// Construct the IP layer
-	ipLayer := &layers.IPv4{
-		Version:  4,
-		TTL:      uint8(ttl),
-		Protocol: layers.IPProtocolTCP,
-		SrcIP:    srcIP,
-		DstIP:    dstIP,
-	}
-
-	// Construct the TCP layer
-	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(srcPort),
-		DstPort: layers.TCPPort(dstPort),
-		Seq:     uint32(seqNum),
-		Ack:     uint32(ackNum),
-		Window:  uint16(winSize),
-		Flags:   layers.TCPFlags(flags),
-	}
-
-	// Set the TCP layer's payload
-	if packetInfo.Payload != "" {
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		payload := []byte(packetInfo.Payload)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		err = tcpLayer.SetNetworkLayerForChecksum(ipLayer)
+		// Parse the JSON data sent by the client
+		var packettcp PacketTCP
+		err = json.NewDecoder(conn).Decode(&packettcp)
 		if err != nil {
-			log.Println(err)
+			panic(err)
+		}
+
+		// Parse the source and destination IP addresses
+		srcIP := net.ParseIP(packettcp.SrcIP)
+		if srcIP == nil {
+			log.Println("Invalid source IP address:", packettcp.SrcIP)
 			return
 		}
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-		tcpLayer.SetNetworkLayerForChecksum(ipLayer)
-	}
+		dstIP := net.ParseIP(packettcp.DstIP)
+		if dstIP == nil {
+			log.Println("Invalid destination IP address:", packettcp.DstIP)
+			return
+		}
 
-	// Construct the packet with all layers
-	buffer := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
-	err = gopacket.SerializeLayers(buffer, opts,
-		ethLayer,
-		ipLayer,
-		tcpLayer,
-		gopacket.Payload([]byte(packetInfo.Payload)),
-	)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		// Parse the source and destination MAC addresses
+		srcMAC, err := net.ParseMAC(packettcp.SrcMac)
+		if err != nil {
+			fmt.Println("Error parsing source MAC address:", err)
+			return
+		}
+		dstMAC, err := net.ParseMAC(packettcp.DstMac)
+		if err != nil {
+			fmt.Println("Error parsing destination MAC address:", err)
+			return
+		}
 
-	// Send the packet over the wire
-	rawPacketData := buffer.Bytes()
-	conn, err := net.Dial("raw", "eth0")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
-	_, err = conn.Write(rawPacketData)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		// Open device for sending packets
+		handle, err := pcap.OpenLive("eth0", 65535, true, pcap.BlockForever)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer handle.Close()
 
-	// Print a confirmation message
-	fmt.Println("Sent packet:")
-	fmt.Println(ethLayer)
-	fmt.Println(ipLayer)
-	fmt.Println(tcpLayer)
+		// Create Ethernet layer
+		eth := &layers.Ethernet{
+			SrcMAC:       srcMAC,
+			DstMAC:       dstMAC,
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+
+		// Create IP layer
+		ip := &layers.IPv4{
+			Version:  4,
+			TTL:      uint8(packettcp.TTL),
+			SrcIP:    srcIP,
+			DstIP:    dstIP,
+			Protocol: layers.IPProtocolTCP,
+		}
+
+		// Create TCP layer
+		tcp := &layers.TCP{
+			SrcPort: layers.TCPPort(packettcp.SrcPort),
+			DstPort: layers.TCPPort(packettcp.DstPort),
+			Seq:     uint32(packettcp.SeqNum),
+			Ack:     uint32(packettcp.AckNum),
+			Window:  uint16(packettcp.WinSize),
+			SYN:     packettcp.Flags == "SYN",
+			ACK:     packettcp.Flags == "ACK",
+			RST:     packettcp.Flags == "RST",
+			PSH:     packettcp.Flags == "PSH",
+			URG:     packettcp.Flags == "URG",
+		}
+		tcp.SetNetworkLayerForChecksum(ip)
+
+		// Create packet with all the layers
+		buffer := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{
+			ComputeChecksums: true,
+			FixLengths:       true,
+		}
+		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp, gopacket.Payload([]byte(packettcp.Payload)))
+		if err != nil {
+			log.Fatal(err)
+		}
+		outgoingPacket := buffer.Bytes()
+
+		// Write the packet to the network interface
+		err = handle.WritePacketData(outgoingPacket)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error sending packet: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Packet sent successfully!")
+	}
 }

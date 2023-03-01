@@ -20,7 +20,7 @@ type PacketData struct {
 	SrcPort int    `json:"SrcPort"`
 	DstPort int    `json:"DstPort"`
 	Payload string `json:"Payload"`
-	Ttl     int    `json:"Ttl"`
+	TTL     int    `json:"Ttl"`
 }
 
 func main() {
@@ -45,6 +45,19 @@ func main() {
 			panic(err)
 		}
 
+		// Parse the source and destination IP addresses
+		srcIP := net.ParseIP(packetData.SrcIp)
+		if srcIP == nil {
+			log.Println("Invalid source IP address:", packetData.SrcIp)
+			return
+		}
+		dstIP := net.ParseIP(packetData.DstIp)
+		if dstIP == nil {
+			log.Println("Invalid destination IP address:", packetData.DstIp)
+			return
+		}
+
+		// Parse the source and destination MAC address
 		srcmac, err := net.ParseMAC(packetData.SrcMac)
 		if err != nil {
 			fmt.Println("Error parsing MAC address:", err)
@@ -56,7 +69,6 @@ func main() {
 			fmt.Println("Error parsing MAC address:", err)
 			return
 		}
-
 		// Open device for sending packets
 		handle, err := pcap.OpenLive("eth0", 65535, true, pcap.BlockForever)
 		if err != nil {
@@ -74,9 +86,9 @@ func main() {
 		// Create IP layer
 		ip := &layers.IPv4{
 			Version:  4,
-			TTL:      uint8(packetData.Ttl),
-			SrcIP:    net.ParseIP(packetData.SrcIp),
-			DstIP:    net.ParseIP(packetData.DstIp),
+			TTL:      uint8(packetData.TTL),
+			SrcIP:    srcIP,
+			DstIP:    dstIP,
 			Protocol: layers.IPProtocolTCP,
 		}
 
