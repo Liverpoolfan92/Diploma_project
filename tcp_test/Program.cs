@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsoleApp1
 {
@@ -11,72 +14,77 @@ namespace ConsoleApp1
         {
             // Prompt the user for input
             Console.Write("SrcMAC: ");
-            string srcMacStr = Console.ReadLine();
+            var srcMacStr = Console.ReadLine();
 
             Console.Write("DstMAC: ");
-            string dstMacStr = Console.ReadLine();
+            var dstMacStr = Console.ReadLine();
 
             Console.Write("SrcIP: ");
-            string srcIPStr = Console.ReadLine();
+            var srcIPStr = Console.ReadLine();
 
             Console.Write("DstIP: ");
-            string dstIPStr = Console.ReadLine();
+            var dstIPStr = Console.ReadLine();
 
             Console.Write("SrcPort: ");
-            int srcPort = Convert.ToInt32(Console.ReadLine());
+            var srcPort = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("DstPort: ");
-            int dstPort = Convert.ToInt32(Console.ReadLine());
+            var dstPort = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("TTL: ");
-            int ttl = Convert.ToInt32(Console.ReadLine());
+            var ttl = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("SeqNum: ");
-            int seqNum = Convert.ToInt32(Console.ReadLine());
+            var seqNum = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("AckNum: ");
-            int ackNum = Convert.ToInt32(Console.ReadLine());
+            var ackNum = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("Flags: ");
-            string flagsStr = Console.ReadLine();
+            var flagsStr = Console.ReadLine();
 
             Console.Write("WinSize: ");
-            int winSize = Convert.ToInt32(Console.ReadLine());
+            var winSize = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("Payload: ");
-            string payload = Console.ReadLine();
+            var payload = Console.ReadLine();
 
             // Create a JSON object from the input
-            JObject json = new JObject(
-                new JProperty("srcMacStr", srcMacStr),
-                new JProperty("dstMacStr", dstMacStr),
-                new JProperty("srcIPStr", srcIPStr),
-                new JProperty("dstIPStr", dstIPStr),
-                new JProperty("srcPort", srcPort),
-                new JProperty("dstPort", dstPort),
-                new JProperty("ttl", ttl),
-                new JProperty("seqNum", seqNum),
-                new JProperty("ackNum", ackNum),
-                new JProperty("flagsStr", flagsStr),
-                new JProperty("winSize", winSize),
-                new JProperty("payload", payload)
-            );
-
-            // Convert the JSON object to a string
-            string jsonString = json.ToString();
-
-            // Send the JSON string to the specified TCP port on the localhost
-            using (TcpClient client = new TcpClient())
+            var data = new
             {
-                client.Connect("localhost", 8484);
-                using (NetworkStream stream = client.GetStream())
-                {
-                    byte[] data = Encoding.UTF8.GetBytes(jsonString);
-                    stream.Write(data, 0, data.Length);
-                    Console.WriteLine("JSON sent successfully.");
-                }
-            }
+                SrcMac = srcMacStr,
+                DstMac = dstMacStr,
+                SrcIp = srcIPStr,
+                DstIp = dstIPStr,
+                SrcPort = srcPort,
+                DstPort = dstPort,
+                Payload = payload,
+                Ttl = ttl,
+                SeqNum = seqNum,
+                AckNum = ackNum,
+                WinSize = winSize,
+                FlagsStr = flagsStr,
+            };
+  
+ 
 
+
+            // Serialize the data to JSON
+            var json = JsonConvert.SerializeObject(data);
+
+            // Create a TCP client and connect to port 8484 on the local host
+            using (var client = new TcpClient())
+            {
+                var endpoint = new IPEndPoint(IPAddress.Loopback, 8484);
+                client.Connect(endpoint);
+
+                // Get a network stream for the client
+                var stream = client.GetStream();
+
+                // Convert the JSON to bytes and write it to the stream
+                var bytes = Encoding.UTF8.GetBytes(json);
+                stream.Write(bytes, 0, bytes.Length);
+            }
             Console.ReadLine();
         }
     }
