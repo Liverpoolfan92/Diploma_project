@@ -82,7 +82,7 @@ func main() {
 			DstMAC:       dstmac,
 			EthernetType: layers.EthernetTypeIPv4,
 		}
-
+		_ = eth
 		// Create IP layer
 		ip := layers.IPv4{
 			Version:  4,
@@ -113,7 +113,6 @@ func main() {
 		}
 		outgoingPacket := buffer.Bytes()
 		fmt.Println("%+v", buffer.Bytes())
-		fmt.Println("%+v", buffer)
 
 		// Write the packet to the network interface
 		err = handle.WritePacketData(outgoingPacket)
