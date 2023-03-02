@@ -77,14 +77,14 @@ func main() {
 		defer handle.Close()
 
 		// Create Ethernet layer
-		eth := &layers.Ethernet{
+		eth := layers.Ethernet{
 			SrcMAC:       srcmac,
 			DstMAC:       dstmac,
 			EthernetType: layers.EthernetTypeIPv4,
 		}
 
 		// Create IP layer
-		ip := &layers.IPv4{
+		ip := layers.IPv4{
 			Version:  4,
 			TTL:      uint8(packetIp.TTL),
 			SrcIP:    srcIP,
@@ -93,13 +93,13 @@ func main() {
 		}
 
 		// Create TCP layer
-		tcp := &layers.TCP{
+		tcp := layers.TCP{
 			SrcPort: layers.TCPPort(packetIp.SrcPort),
 			DstPort: layers.TCPPort(packetIp.DstPort),
 			Seq:     100,
 			SYN:     true,
 		}
-		tcp.SetNetworkLayerForChecksum(ip)
+		tcp.SetNetworkLayerForChecksum(&ip)
 
 		// Create packet with all the layers
 		buffer := gopacket.NewSerializeBuffer()
@@ -107,7 +107,7 @@ func main() {
 			ComputeChecksums: true,
 			FixLengths:       true,
 		}
-		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp, gopacket.Payload([]byte(packetIp.Payload)))
+		err = gopacket.SerializeLayers(buffer, opts, &eth, &ip, &tcp, gopacket.Payload([]byte(packetIp.Payload)))
 		if err != nil {
 			log.Fatal(err)
 		}
