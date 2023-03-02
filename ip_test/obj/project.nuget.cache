@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "PvYA1JeqYWQuYddWd3a8ArP7XNnajvHWaEoMYr9I6hJEhVr6c3bo5zQKBrwkhvB/Deb0VthodnsAVoCqv0++mg==",
+  "dgSpecHash": "rqKo9BErN1tqEwf+LTs0pAjnpBnaYxsme3Zbu+X7gX9lcGXyh1BcGBGHMH6B0OtrffUfl3COi/oin5FBnk6/Sg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\ip_test\\ip_test.csproj",
+  "projectFilePath": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\ip_test\\ip_test.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\zhele\\.nuget\\packages\\newtonsoft.json\\13.0.2\\newtonsoft.json.13.0.2.nupkg.sha512"
   ],
