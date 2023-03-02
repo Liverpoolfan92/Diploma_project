@@ -113,6 +113,7 @@ func main() {
 		}
 		outgoingPacket := buffer.Bytes()
 		fmt.Println("%+v", buffer.Bytes())
+		fmt.Println("%+v", buffer)
 
 		// Write the packet to the network interface
 		err = handle.WritePacketData(outgoingPacket)
