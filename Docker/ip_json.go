@@ -70,7 +70,7 @@ func main() {
 			return
 		}
 		// Open device for sending packets
-		handle, err := pcap.OpenLive("lo", 65535, true, pcap.BlockForever)
+		handle, err := pcap.OpenLive("eht0", 65535, true, pcap.BlockForever)
 		if err != nil {
 			log.Fatal(err)
 		}
