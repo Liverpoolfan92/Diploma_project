@@ -2,94 +2,128 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
-	"time"
+	"os"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 )
+
+type PacketICMPv4 struct {
+	ICMPType int    `json:"icmpType"`
+	ICMPCode int    `json:"icmpCode"`
+	SrcIP    string `json:"srcIP"`
+	DstIP    string `json:"dstIP"`
+	SrcMAC   string `json:"srcMAC"`
+	DstMAC   string `json:"dstMAC"`
+}
 
 func main() {
 	// Listen on port 8484 for incoming connections
-	addr, err := net.ResolveTCPAddr("tcp", "0.0.0.0:8484")
+	listener, err := net.Listen("tcp", ":8484")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	listener, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Listening on %s", addr)
+	defer listener.Close()
 
-	// Loop forever, handling incoming connections
 	for {
+		// Wait for a client to connect
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Println(err)
-			continue
+			panic(err)
 		}
-		go handleConnection(conn)
-	}
-}
 
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
+		// Parse the JSON data sent by the client
+		var packeticmpv4 PacketICMPv4
+		err = json.NewDecoder(conn).Decode(&packeticmpv4)
+		if err != nil {
+			panic(err)
+		}
 
-	// Read the incoming JSON message from the connection
-	decoder := json.NewDecoder(conn)
-	var packetInfo struct {
-		ICMPType uint8            `json:"icmpType"`
-		ICMPCode uint8            `json:"icmpCode"`
-		SrcIP    net.IP           `json:"srcIP"`
-		DstIP    net.IP           `json:"dstIP"`
-		SrcMAC   net.HardwareAddr `json:"srcMAC"`
-		DstMAC   net.HardwareAddr `json:"dstMAC"`
-	}
-	err := decoder.Decode(&packetInfo)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Printf("Received packet info: %+v", packetInfo)
+		// Parse the source and destination IP addresses
+		srcIP := net.ParseIP(packeticmpv4.SrcIP)
+		if srcIP == nil {
+			log.Println("Invalid source IP address:", packeticmpv4.SrcIP)
+			return
+		}
+		dstIP := net.ParseIP(packeticmpv4.DstIP)
+		if dstIP == nil {
+			log.Println("Invalid destination IP address:", packeticmpv4.DstIP)
+			return
+		}
 
-	// Construct the ICMPv4 packet using go.pkt
-	ethLayer := &layers.Ethernet{
-		SrcMAC:       packetInfo.SrcMAC,
-		DstMAC:       packetInfo.DstMAC,
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-	ipLayer := &layers.IPv4{
-		Version:  4,
-		Protocol: layers.IPProtocolICMPv4,
-		SrcIP:    packetInfo.SrcIP,
-		DstIP:    packetInfo.DstIP,
-		TTL:      64,
-	}
-	icmpLayer := &layers.ICMPv4{
-		TypeCode: layers.CreateICMPv4TypeCode(packetInfo.ICMPType, packetInfo.ICMPCode),
-	}
-	icmpLayer.SetNetworkLayerForChecksum(ipLayer)
+		// Parse the source and destination MAC addresses
+		srcMAC, err := net.ParseMAC(packeticmpv4.SrcMAC)
+		if err != nil {
+			fmt.Println("Error parsing source MAC address:", err)
+			return
+		}
+		dstMAC, err := net.ParseMAC(packeticmpv4.DstMAC)
+		if err != nil {
+			fmt.Println("Error parsing destination MAC address:", err)
+			return
+		}
 
-	buffer := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
+		// Open device for sending packets
+		handle, err := pcap.OpenLive("eth0", 65535, true, pcap.BlockForever)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer handle.Close()
 
-	err = gopacket.SerializeLayers(buffer, opts, ethLayer, ipLayer, icmpLayer)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		// Create Ethernet layer
+		eth := &layers.Ethernet{
+			SrcMAC:       srcMAC,
+			DstMAC:       dstMAC,
+			EthernetType: layers.EthernetTypeIPv4,
+		}
 
-	// Send the ICMPv4 packet
-	packetData := buffer.Bytes()
-	conn.SetWriteDeadline(time.Now().Add(5 * time.Second)) // Set a timeout for the write
-	_, err = conn.Write(packetData)
-	if err != nil {
-		log.Println(err)
-		return
+		// Create IP layer
+		ip := &layers.IPv4{
+			Version:  4,
+			TTL:      64,
+			SrcIP:    srcIP,
+			DstIP:    dstIP,
+			Protocol: layers.IPProtocolICMPv4,
+		}
+
+		// next 13 lines are godlike//no idea what it does
+		icmp := layers.ICMPv4{
+			TypeCode: layers.ICMPv4TypeCode(packeticmpv4.Type),
+			Code:     packeticmpv4.Code,
+			Checksum: 0,
+		}
+		// Create ICMPv4 layer
+		icmpv4 := &layers.ICMPv4{
+			TypeCode: layers.ICMPv4TypeCode{
+				Type: layers.ICMPv4Type(packeticmpv4.ICMPType),
+				Code: packeticmpv4.ICMPCode,
+			},
+		}
+
+		// Create packet with all the layers
+		buffer := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{
+			ComputeChecksums: true,
+			FixLengths:       true,
+		}
+		err = gopacket.SerializeLayers(buffer, opts, &eth, &ip, &icmpv4)
+		if err != nil {
+			log.Fatal(err)
+		}
+		outgoingPacket := buffer.Bytes()
+		fmt.Println("%+v", buffer.Bytes())
+
+		// Write the packet to the network interface
+		err = handle.WritePacketData(outgoingPacket)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error sending packet: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Packet sent successfully!")
 	}
-	log.Printf("Sent ICMPv4 packet: % X", packetData)
 }

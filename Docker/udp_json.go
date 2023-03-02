@@ -2,98 +2,121 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
-	"time"
+	"os"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 )
+
+type PacketUdp struct {
+	SrcIP   string `json:"srcIP"`
+	DstIP   string `json:"dstIP"`
+	SrcPort int    `json:"srcPort"`
+	DstPort int    `json:"dstPort"`
+	SrcMAC  string `json:"srcMAC"`
+	DstMAC  string `json:"dstMAC"`
+	Payload string `json:"payload"`
+}
 
 func main() {
 	// Listen on port 8484 for incoming connections
-	addr, err := net.ResolveTCPAddr("tcp", "0.0.0.0:8484")
+	listener, err := net.Listen("tcp", ":8484")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	listener, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Listening on %s", addr)
+	defer listener.Close()
 
-	// Loop forever, handling incoming connections
 	for {
+		// Wait for a client to connect
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Println(err)
-			continue
+			panic(err)
 		}
-		go handleConnection(conn)
-	}
-}
 
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
+		// Parse the JSON data sent by the client
+		var packetudp PacketUdp
+		err = json.NewDecoder(conn).Decode(&packetudp)
+		if err != nil {
+			panic(err)
+		}
 
-	// Read the incoming JSON message from the connection
-	decoder := json.NewDecoder(conn)
-	var packetInfo struct {
-		SrcIP   net.IP           `json:"srcIP"`
-		DstIP   net.IP           `json:"dstIP"`
-		SrcPort uint16           `json:"srcPort"`
-		DstPort uint16           `json:"dstPort"`
-		SrcMAC  net.HardwareAddr `json:"srcMAC"`
-		DstMAC  net.HardwareAddr `json:"dstMAC"`
-		Payload []byte           `json:"payload"`
-	}
-	err := decoder.Decode(&packetInfo)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Printf("Received packet info: %+v", packetInfo)
+		// Parse the source and destination IP addresses
+		srcIP := net.ParseIP(packetudp.SrcIP)
+		if srcIP == nil {
+			log.Println("Invalid source IP address:", packetudp.SrcIP)
+			return
+		}
+		dstIP := net.ParseIP(packetudp.DstIP)
+		if dstIP == nil {
+			log.Println("Invalid destination IP address:", packetudp.DstIP)
+			return
+		}
 
-	// Construct the UDP packet using gopacket
-	ethLayer := &layers.Ethernet{
-		SrcMAC:       packetInfo.SrcMAC,
-		DstMAC:       packetInfo.DstMAC,
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-	ipLayer := &layers.IPv4{
-		Version:  4,
-		Protocol: layers.IPProtocolUDP,
-		SrcIP:    packetInfo.SrcIP,
-		DstIP:    packetInfo.DstIP,
-	}
-	udpLayer := &layers.UDP{
-		SrcPort: layers.UDPPort(packetInfo.SrcPort),
-		DstPort: layers.UDPPort(packetInfo.DstPort),
-	}
-	if len(packetInfo.Payload) > 0 {
-		udpLayer.SetNetworkLayerForChecksum(ipLayer)
-		udpLayer.Payload = packetInfo.Payload
-	}
+		// Parse the source and destination MAC addresses
+		srcMAC, err := net.ParseMAC(packetudp.SrcMAC)
+		if err != nil {
+			fmt.Println("Error parsing source MAC address:", err)
+			return
+		}
+		dstMAC, err := net.ParseMAC(packetudp.DstMAC)
+		if err != nil {
+			fmt.Println("Error parsing destination MAC address:", err)
+			return
+		}
 
-	buffer := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
+		// Open device for sending packets
+		handle, err := pcap.OpenLive("eth0", 65535, true, pcap.BlockForever)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer handle.Close()
 
-	err = gopacket.SerializeLayers(buffer, opts, ethLayer, ipLayer, udpLayer)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		// Create Ethernet layer
+		eth := &layers.Ethernet{
+			SrcMAC:       srcMAC,
+			DstMAC:       dstMAC,
+			EthernetType: layers.EthernetTypeIPv4,
+		}
 
-	// Send the UDP packet
-	packetData := buffer.Bytes()
-	conn.SetWriteDeadline(time.Now().Add(5 * time.Second)) // Set a timeout for the write
-	_, err = conn.Write(packetData)
-	if err != nil {
-		log.Println(err)
-		return
+		// Create IP layer
+		ip := &layers.IPv4{
+			Version:  4,
+			TTL:      64,
+			SrcIP:    srcIP,
+			DstIP:    dstIP,
+			Protocol: layers.IPProtocolUDP,
+		}
+
+		// Create UDP layer
+		udp := &layers.UDP{
+			SrcPort: layers.UDPPort(packetudp.SrcPort),
+			DstPort: layers.UDPPort(packetudp.DstPort),
+		}
+
+		// Create packet with all the layers
+		buffer := gopacket.NewSerializeBuffer()
+		opts := gopacket.SerializeOptions{
+			ComputeChecksums: true,
+			FixLengths:       true,
+		}
+		err = gopacket.SerializeLayers(buffer, opts, eth, ip, udp, gopacket.Payload([]byte(packetudp.Payload)))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		outgoingPacket := buffer.Bytes()
+
+		// Write the packet to the network interface
+		err = handle.WritePacketData(outgoingPacket)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error sending packet: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Packet sent successfully!")
 	}
-	log.Printf("Sent UDP packet: % X", packetData)
 }
