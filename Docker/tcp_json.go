@@ -109,7 +109,6 @@ func main() {
 			PSH:     packettcp.Flags == "PSH",
 			URG:     packettcp.Flags == "URG",
 		}
-		tcp.SetNetworkLayerForChecksum(ip)
 
 		// Create packet with all the layers
 		buffer := gopacket.NewSerializeBuffer()
@@ -117,7 +116,7 @@ func main() {
 			ComputeChecksums: true,
 			FixLengths:       true,
 		}
-		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp)
+		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp, gopacket.Payload([]byte(packettcp.Payload)))
 		if err != nil {
 			log.Fatal(err)
 		}
