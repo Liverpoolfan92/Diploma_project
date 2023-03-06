@@ -89,17 +89,19 @@ func main() {
 			DstIP:    dstIP,
 			Protocol: layers.IPProtocolICMPv4,
 		}
-
+		//fix the next 15 lines?
 		// next 13 lines are godlike//no idea what it does
-		icmp := layers.ICMPv4{
+		icmp := &layer.ICMPv4{
 			TypeCode: layers.ICMPv4TypeCode(packeticmpv4.Type),
 			Code:     packeticmpv4.Code,
 			Checksum: 0,
+			ID:       packeticmpv4.ID,
+			Seq:      packeticmpv4.Seq,
 		}
 		// Create ICMPv4 layer
 		icmpv4 := &layers.ICMPv4{
 			TypeCode: layers.ICMPv4TypeCode{
-				Type: layers.ICMPv4Type(packeticmpv4.ICMPType),
+				Type: uint16(packeticmpv4.ICMPType),
 				Code: packeticmpv4.ICMPCode,
 			},
 		}
@@ -110,7 +112,7 @@ func main() {
 			ComputeChecksums: true,
 			FixLengths:       true,
 		}
-		err = gopacket.SerializeLayers(buffer, opts, &eth, &ip, &icmpv4)
+		err = gopacket.SerializeLayers(buffer, opts, eth, ip, icmpv4)
 		if err != nil {
 			log.Fatal(err)
 		}
