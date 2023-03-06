@@ -117,7 +117,7 @@ func main() {
 			ComputeChecksums: true,
 			FixLengths:       true,
 		}
-		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp, gopacket.Payload([]byte(packettcp.Payload)))
+		err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp)
 		if err != nil {
 			log.Fatal(err)
 		}
