@@ -109,6 +109,8 @@ func main() {
 			PSH:     packettcp.Flags == "PSH",
 			URG:     packettcp.Flags == "URG",
 		}
+		//calculate the checksum of a packet with eth, ip, tcp layers and payload
+		tcp.SetNetworkLayerForChecksum(ip)
 
 		// Create packet with all the layers
 		buffer := gopacket.NewSerializeBuffer()

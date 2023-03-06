@@ -96,6 +96,7 @@ func main() {
 			SrcPort: layers.UDPPort(packetudp.SrcPort),
 			DstPort: layers.UDPPort(packetudp.DstPort),
 		}
+		udp.SetNetworkLayerForChecksum(ip)
 
 		// Create packet with all the layers
 		buffer := gopacket.NewSerializeBuffer()

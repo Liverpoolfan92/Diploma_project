@@ -65,9 +65,6 @@ namespace ConsoleApp1
                 WinSize = winSize,
                 FlagsStr = flagsStr,
             };
-  
- 
-
 
             // Serialize the data to JSON
             var json = JsonConvert.SerializeObject(data);

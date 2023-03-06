@@ -1,46 +1,68 @@
 ﻿using System;
-using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
-namespace PacketSender
+namespace ConsoleApp1
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Enter source MAC address:");
-            string srcMacStr = Console.ReadLine();
-            Console.WriteLine("Enter destination MAC address:");
-            string dstMacStr = Console.ReadLine();
-            Console.WriteLine("Enter source IP address:");
-            string srcIPStr = Console.ReadLine();
-            Console.WriteLine("Enter destination IP address:");
-            string dstIPStr = Console.ReadLine();
-            Console.WriteLine("Enter source port:");
-            string srcPortStr = Console.ReadLine();
-            Console.WriteLine("Enter destination port:");
-            string dstPortStr = Console.ReadLine();
-            Console.WriteLine("Enter payload:");
-            string payload = Console.ReadLine();
+            // Prompt the user for input
+            Console.Write("SrcMAC: ");
+            var srcMacStr = Console.ReadLine();
 
-            JObject json = new JObject();
-            json.Add("srcMac", srcMacStr);
-            json.Add("dstMac", dstMacStr);
-            json.Add("srcIP", srcIPStr);
-            json.Add("dstIP", dstIPStr);
-            json.Add("srcPort", srcPortStr);
-            json.Add("dstPort", dstPortStr);
-            json.Add("payload", payload);
+            Console.Write("DstMAC: ");
+            var dstMacStr = Console.ReadLine();
 
-            string jsonStr = json.ToString();
+            Console.Write("SrcIP: ");
+            var srcIPStr = Console.ReadLine();
 
-            TcpClient client = new TcpClient("localhost", 8484);
-            StreamWriter writer = new StreamWriter(client.GetStream(), Encoding.ASCII);
-            writer.Write(jsonStr);
-            writer.Flush();
-            client.Close();
+            Console.Write("DstIP: ");
+            var dstIPStr = Console.ReadLine();
+
+            Console.Write("SrcPort: ");
+            var srcPortStr = Console.ReadLine();
+
+            Console.Write("DstPort: ");
+            var dstPortStr = Console.ReadLine();
+
+            Console.Write("Payload: ");
+            var payload = Console.ReadLine();
+
+            // Create a JSON object from the input
+            var data = new
+            {
+                SrcMac = srcMacStr,
+                DstMac = dstMacStr,
+                SrcIp = srcIPStr,
+                DstIp = dstIPStr,
+                SrcPort = Convert.ToInt32(srcPortStr),
+                DstPort = Convert.ToInt32(dstPortStr),
+                Payload = payload,
+            };
+
+            // Serialize the data to JSON
+            var json = JsonConvert.SerializeObject(data);
+
+            // Create a TCP client and connect to port 8484 on the local host
+            using (var client = new TcpClient())
+            {
+                var endpoint = new IPEndPoint(IPAddress.Loopback, 8484);
+                client.Connect(endpoint);
+
+                // Get a network stream for the client
+                var stream = client.GetStream();
+
+                // Convert the JSON to bytes and write it to the stream
+                var bytes = Encoding.UTF8.GetBytes(json);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+
+            Console.WriteLine("Data sent successfully.");
+            Console.ReadLine();
         }
     }
 }
