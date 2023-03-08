@@ -119,6 +119,7 @@ func main() {
 
 		// Connect to TCP server at localhost:8485
 		conn8485, err := net.Dial("tcp", ip_host+":8485")
+		fmt.Println("IP:", ip_host)
 		if err != nil {
 			panic(err)
 		}
