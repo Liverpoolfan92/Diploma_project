@@ -55,8 +55,8 @@ namespace ConsoleApp1
             // Create a TCP client and connect to port 8484 on the local host
             using (var client8484 = new TcpClient())
             {
-                var endpoint = new IPEndPoint(IPAddress.Loopback, 8484);
-                client8484.Connect(endpoint);
+                var endpoint8484 = new IPEndPoint(IPAddress.Loopback, 8484);
+                client8484.Connect(endpoint8484);
 
                 // Get a network stream for the client
                 var stream8484 = client8484.GetStream();
@@ -71,12 +71,14 @@ namespace ConsoleApp1
 
 
             // Set up TCP client to connect to localhost on port 8485
-            TcpClient client = new TcpClient("localhost", 8485);
+            TcpClient client8485 = new TcpClient();
+            var endpoint8485 = new IPEndPoint(IPAddress.Loopback, 8485);
+            client8485.Connect(endpoint8485);
 
             // Receive JSON object containing network packet
-            NetworkStream stream = client.GetStream();
-            byte[] buffer = new byte[client.ReceiveBufferSize];
-            int bytesRead = stream.Read(buffer, 0, client.ReceiveBufferSize);
+            NetworkStream stream8485 = client8485.GetStream();
+            byte[] buffer = new byte[client8485.ReceiveBufferSize];
+            int bytesRead = stream8485.Read(buffer, 0, client8485.ReceiveBufferSize);
             string jsonPacket = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
             // Parse JSON object and get packet bytes
@@ -95,8 +97,8 @@ namespace ConsoleApp1
             }
 
             // Close TCP client and stream
-            stream.Close();
-            client.Close();
+            stream8485.Close();
+            client8485.Close();
         }
 
         public static IPAddress GetNetworkInterfaceIPAddress(string interfaceName)
