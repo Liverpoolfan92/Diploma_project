@@ -116,7 +116,7 @@ func main() {
 		outgoingPacket := buffer.Bytes()
 
 		// Connect to TCP server at localhost:8485
-		conn8485, err := net.Dial("tcp", ":8485")
+		conn8485, err := net.Dial("tcp", "host.docker.internal:8485")
 		if err != nil {
 			panic(err)
 		}
