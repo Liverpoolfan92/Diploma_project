@@ -15,37 +15,26 @@ namespace ConsoleApp1
             // Prompt the user for input
             Console.Write("SrcMAC: ");
             var srcMacStr = Console.ReadLine();
-
             Console.Write("DstMAC: ");
             var dstMacStr = Console.ReadLine();
-
             Console.Write("SrcIP: ");
             var srcIPStr = Console.ReadLine();
-
             Console.Write("DstIP: ");
             var dstIPStr = Console.ReadLine();
-
             Console.Write("SrcPort: ");
             var srcPort = Convert.ToInt32(Console.ReadLine());
-
             Console.Write("DstPort: ");
             var dstPort = Convert.ToInt32(Console.ReadLine());
-
             Console.Write("TTL: ");
             var ttl = Convert.ToInt32(Console.ReadLine());
-
             Console.Write("SeqNum: ");
             var seqNum = Convert.ToInt32(Console.ReadLine());
-
             Console.Write("AckNum: ");
             var ackNum = Convert.ToInt32(Console.ReadLine());
-
             Console.Write("Flags: ");
             var flagsStr = Console.ReadLine();
-
             Console.Write("WinSize: ");
             var winSize = Convert.ToInt32(Console.ReadLine());
-
             Console.Write("Payload: ");
             var payload = Console.ReadLine();
 
