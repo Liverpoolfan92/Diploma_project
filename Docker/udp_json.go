@@ -114,6 +114,7 @@ func main() {
 		}
 
 		outgoingPacket := buffer.Bytes()
+		fmt.Println("JSON: ", outgoingPacket)
 
 		ip_host := os.Getenv("VAR1")
 

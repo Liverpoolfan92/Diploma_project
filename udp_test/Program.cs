@@ -67,11 +67,10 @@ namespace ConsoleApp1
             }
 
             Console.WriteLine("Data sent successfully.");
-            Console.ReadLine();
 
-
+            var ip_host = IPAddress.Parse("10.107.223.219");
             // Set up TCP client to connect to localhost on port 8485
-            TcpClient client8485 = new TcpClient("localhost", 8485);
+            TcpClient client8485 = new TcpClient(ip_host.ToString(), 8485);
 
             // Receive JSON object containing network packet
             NetworkStream stream8485 = client8485.GetStream();
