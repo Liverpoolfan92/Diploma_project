@@ -86,9 +86,6 @@ namespace ConsoleApp1
                 int bytesRead = client.GetStream().Read(buffer, 0, client.ReceiveBufferSize);
                 string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                // Deserialize the JSON into a byte array
-                byte[] data_json = JsonConvert.DeserializeObject<byte[]>(json);
-                Console.WriteLine(data_json);
 
                 // Parse the JSON into an object
                 MyObject obj = JsonConvert.DeserializeObject<MyObject>(json);
