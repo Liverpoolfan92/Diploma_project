@@ -68,36 +68,38 @@ namespace ConsoleApp1
 
             Console.WriteLine("Data sent successfully.");
 
-            var ip_host = IPAddress.Parse("10.107.223.219");
-            // Set up TCP client to connect to localhost on port 8485
-            TcpClient client8485 = new TcpClient(ip_host.ToString(), 8485);
+            var ip_host = IPAddress.Parse("192.168.1.8");
+            
+                // Set up the listener socket
+                TcpListener listener = new TcpListener(ip_host, 8485);
+                listener.Start();
 
-            // Receive JSON object containing network packet
-            NetworkStream stream8485 = client8485.GetStream();
-            byte[] buffer = new byte[client8485.ReceiveBufferSize];
-            int bytesRead = stream8485.Read(buffer, 0, client8485.ReceiveBufferSize);
-            string jsonPacket = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                Console.WriteLine("Listening on port 8485...");
 
-            // Parse JSON object and get packet bytes
-            JsonDocument packetDocument = JsonDocument.Parse(jsonPacket);
-            JsonElement packetElement = packetDocument.RootElement.GetProperty("packet");
-            byte[] packetBytes = Convert.FromBase64String(packetElement.GetString());
+                while (true)
+                {
+                    // Wait for a connection
+                    TcpClient client = listener.AcceptTcpClient();
 
-            // Get IP address of eth0
-            IPAddress eth0IPAddress = GetNetworkInterfaceIPAddress("eth0");
+                // Read the JSON payload
+                byte[] buffer = new byte[client.ReceiveBufferSize];
+                int bytesRead = client.GetStream().Read(buffer, 0, client.ReceiveBufferSize);
+                string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-            // Send packet through eth0
-            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP))
-            {
-                socket.Bind(new IPEndPoint(eth0IPAddress, 0));
-                socket.Send(packetBytes);
+                // Deserialize the JSON into a byte array
+                byte[] data_json = JsonConvert.DeserializeObject<byte[]>(json);
+                Console.WriteLine(data_json);
+
+                // Parse the JSON into an object
+                MyObject obj = JsonConvert.DeserializeObject<MyObject>(json);
+
+                    // Do something with the object
+                    Console.WriteLine($"Received object with property1={obj.Property1}");
+
+                    // Clean up
+                    client.Close();
+                }
             }
-
-            // Close TCP client and stream
-            stream8485.Close();
-            client8485.Close();
-        }
-
         public static IPAddress GetNetworkInterfaceIPAddress(string interfaceName)
         {
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
@@ -119,4 +121,9 @@ namespace ConsoleApp1
             throw new ArgumentException($"No IP address found for network interface {interfaceName}");
         }
     }
-}
+
+        class MyObject
+        {
+            public string Property1 { get; set; }
+        }
+    }
