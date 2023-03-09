@@ -22,6 +22,10 @@ type PacketUdp struct {
 	Payload string `json:"payload"`
 }
 
+type Packet struct {
+	Packet []byte `json:"packet"`
+}
+
 func main() {
 	// Listen on port 8484 for incoming connections
 	listener, err := net.Listen("tcp", ":8484")
@@ -111,7 +115,6 @@ func main() {
 
 		outgoingPacket := buffer.Bytes()
 		fmt.Println("JSON: ", outgoingPacket)
-		fmt.Println("Buffer: ", buffer)
 
 		ip_host := os.Getenv("VAR1")
 
@@ -124,7 +127,8 @@ func main() {
 		defer conn8485.Close()
 
 		// Create JSON object containing packet bytes
-		jsonPacket, err := json.Marshal(buffer)
+		packet := Packet{Packet: outgoingPacket}
+		jsonPacket, err := json.Marshal(packet)
 		if err != nil {
 			panic(err)
 		}
