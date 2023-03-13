@@ -68,7 +68,7 @@ namespace ConsoleApp1
 
             Console.WriteLine("Data sent successfully.");
 
-            var ip_host = IPAddress.Parse("192.168.1.8");
+            var ip_host = GetNetworkInterfaceIPAddress("eth0");
             
                 // Set up the listener socket
                 TcpListener listener = new TcpListener(ip_host, 8485);
@@ -88,10 +88,10 @@ namespace ConsoleApp1
 
 
                 // Parse the JSON into an object
-                MyObject obj = JsonConvert.DeserializeObject<MyObject>(json);
+                RAWPACKET obj = JsonConvert.DeserializeObject<RAWPACKET>(json);
 
                     // Do something with the object
-                    Console.WriteLine($"Received object with property1={obj.Property1}");
+                    Console.WriteLine($"Received object with property1={obj.BYTES}");
 
                     // Clean up
                     client.Close();
@@ -119,8 +119,8 @@ namespace ConsoleApp1
         }
     }
 
-        class MyObject
+        class RAWPACKET
         {
-            public string Property1 { get; set; }
+            public string BYTES { get; set; }
         }
     }
