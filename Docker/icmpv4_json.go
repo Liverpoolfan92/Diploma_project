@@ -93,7 +93,7 @@ func main() {
 		// next 13 lines are godlike//no idea what it does
 		// Create ICMPv4 layer
 		icmpv4 := &layers.ICMPv4{
-			TypeCode: layers.CreateICMPv4TypeCode(uint8(PacketICMPv4.ICMPType), uint8(packeticmpv4.ICMPCode)),
+			TypeCode: layers.CreateICMPv4TypeCode(uint8(packeticmpv4.ICMPType), uint8(packeticmpv4.ICMPCode)),
 		}
 
 		// Create packet with all the layers
