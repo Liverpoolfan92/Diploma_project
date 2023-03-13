@@ -91,19 +91,9 @@ func main() {
 		}
 		//fix the next 15 lines?
 		// next 13 lines are godlike//no idea what it does
-		icmp := &layer.ICMPv4{
-			TypeCode: layers.ICMPv4TypeCode(packeticmpv4.Type),
-			Code:     packeticmpv4.Code,
-			Checksum: 0,
-			ID:       packeticmpv4.ID,
-			Seq:      packeticmpv4.Seq,
-		}
 		// Create ICMPv4 layer
 		icmpv4 := &layers.ICMPv4{
-			TypeCode: layers.ICMPv4TypeCode{
-				Type: uint16(packeticmpv4.ICMPType),
-				Code: packeticmpv4.ICMPCode,
-			},
+			TypeCode: layers.CreateICMPv4TypeCode(uint8(PacketICMPv4.ICMPType), uint8(packeticmpv4.ICMPCode)),
 		}
 
 		// Create packet with all the layers
