@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SharpPcap;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsoleApp1
@@ -72,10 +73,9 @@ namespace ConsoleApp1
                 var bytes = Encoding.UTF8.GetBytes(json8484);
                 stream8484.Write(bytes, 0, bytes.Length);
             }
-            var ip_host = GetNetworkInterfaceIPAddress("eth0");
 
             // Set up the listener socket
-            TcpListener listener = new TcpListener(ip_host, 8485);
+            TcpListener listener = new TcpListener(IPAddress.Any, 8485);
             listener.Start();
 
             Console.WriteLine("Listening on port 8485...");
@@ -93,38 +93,47 @@ namespace ConsoleApp1
 
                 // Parse the JSON into an object
                 RAWPACKET obj = JsonConvert.DeserializeObject<RAWPACKET>(json8485);
+                byte[] packetdata = Convert.FromBase64String(obj.packet);
 
+                CaptureDeviceList devices = CaptureDeviceList.Instance;
+                for (int i = 0; i < devices.Count; i++)
+                {
+                    Console.WriteLine("{0}.{1}\n", i, devices[i]);
+                    Console.WriteLine("Choose a device");
+                }
+                int dev = 0;
+                if ((!Int32.TryParse(Console.ReadLine(), out dev)) || (dev > devices.Count))
+                {
+                    Console.WriteLine("Incorrect device number");
+                    Console.ReadLine();
+                    return;
+                }
+                IInjectionDevice injectionDevice = devices[dev];
+                ICaptureDevice device = devices[dev];
+                device.Open();
+                try
+                {
+                    injectionDevice.SendPacket(packetdata);
+                    //device.SendPacket(obj.BYTES);
+                    Console.WriteLine("-- Packet send successfuly.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("--" + e.Message);
+                }
+                device.Close();
+                Console.WriteLine("-- Device closed. ");
                 // Do something with the object
-                Console.WriteLine($"Received object with property1={obj.BYTES}");
+                Console.WriteLine($"Received object with property1={obj.packet}");
 
                 // Clean up
                 client.Close();
             }
         }
-        public static IPAddress GetNetworkInterfaceIPAddress(string interfaceName)
-        {
-            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-            foreach (NetworkInterface iface in interfaces)
-            {
-                if (iface.Name == interfaceName && iface.OperationalStatus == OperationalStatus.Up)
-                {
-                    foreach (UnicastIPAddressInformation ip in iface.GetIPProperties().UnicastAddresses)
-                    {
-                        if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                        {
-                            return ip.Address;
-                        }
-                    }
-                }
-            }
-
-            throw new ArgumentException($"No IP address found for network interface {interfaceName}");
-        }
     }
 
     class RAWPACKET
     {
-        public string BYTES { get; set; }
+        public string packet { get; set; }
     }
 }

@@ -83,10 +83,10 @@ namespace ConsoleApp1
                 // Read the JSON payload
                 byte[] buffer = new byte[client.ReceiveBufferSize];
                 int bytesRead = client.GetStream().Read(buffer, 0, client.ReceiveBufferSize);
-                string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                string json8485 = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
                 // Parse the JSON into an object
-                RAWPACKET obj = JsonConvert.DeserializeObject<RAWPACKET>(json);
+                RAWPACKET obj = JsonConvert.DeserializeObject<RAWPACKET>(json8485);
                 byte[] packetdata = Convert.FromBase64String(obj.packet);
 
                 CaptureDeviceList devices = CaptureDeviceList.Instance;

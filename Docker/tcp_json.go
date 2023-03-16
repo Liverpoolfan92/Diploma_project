@@ -12,6 +12,10 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+type Packet struct {
+	Packet []byte `json:"packet"`
+}
+
 type PacketTCP struct {
 	SrcMac  string `json:"SrcMac"`
 	DstMac  string `json:"DstMac"`
