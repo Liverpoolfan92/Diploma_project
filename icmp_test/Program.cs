@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpPcap;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsoleApp1
 {
@@ -13,40 +14,53 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             // Prompt the user for input
-            Console.WriteLine("Enter the ICMP type:");
+
+            Console.Write("SrcIP: ");
+            var srcIP = Console.ReadLine();
+
+            Console.Write("DstIP: ");
+            var dstIP = Console.ReadLine();
+
+            Console.Write("SrcMAC: ");
+            var srcMac = Console.ReadLine();
+
+            Console.Write("DstMAC: ");
+            var dstMac = Console.ReadLine();
+
+            Console.WriteLine("ICMP type:");
             int icmpType = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the ICMP code:");
+            Console.WriteLine("ICMP code:");
             int icmpCode = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Enter the source IP address:");
-            string srcIP = Console.ReadLine();
-
-            Console.WriteLine("Enter the destination IP address:");
-            string dstIP = Console.ReadLine();
-
             // Create a JSON object from the input
-            JObject json = new JObject(
-                new JProperty("icmpType", icmpType),
-                new JProperty("icmpCode", icmpCode),
-                new JProperty("srcIP", srcIP),
-                new JProperty("dstIP", dstIP)
-            );
-
-            // Convert the JSON object to a string
-            string jsonString = json.ToString();
-
-            // Send the JSON string to the specified TCP port on the localhost
-            using (TcpClient client = new TcpClient())
+            var data = new
             {
-                client.Connect("localhost", 8484);
-                using (NetworkStream stream = client.GetStream())
-                {
-                    byte[] data = Encoding.UTF8.GetBytes(jsonString);
-                    stream.Write(data, 0, data.Length);
-                    Console.WriteLine("JSON sent successfully.");
-                }
+                ICMPType = icmpType,
+                ICMPCode= icmpCode,
+                SrcMac = srcMac,
+                DstMac = dstMac,
+                SrcIP = srcIP,
+                DstIP = dstIP
+            };
+
+            // Serialize the data to JSON
+            var send_json = JsonConvert.SerializeObject(data);
+
+            // Create a TCP client and connect to port 8484 on the local host
+            using (var client8484 = new TcpClient())
+            {
+                var endpoint = new IPEndPoint(IPAddress.Loopback, 8484);
+                client8484.Connect(endpoint);
+
+                // Get a network stream for the client
+                var stream8484 = client8484.GetStream();
+
+                // Convert the JSON to bytes and write it to the stream
+                var bytes = Encoding.UTF8.GetBytes(send_json);
+                stream8484.Write(bytes, 0, bytes.Length);
             }
+
             // Set up the listener socket
             TcpListener listener = new TcpListener(IPAddress.Any, 8485);
             listener.Start();
