@@ -1,63 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using Newtonsoft.Json;
-using PacketDotNet;
 using SharpPcap;
+using PacketDotNet;
 using SharpPcap.LibPcap;
+using System.Net.NetworkInformation;
 
-namespace PacketSender
+namespace PcapSender
 {
     class Program
     {
         static void Main(string[] args)
         {
+            // Get the list of available network interfaces
+            var devices = CaptureDeviceList.Instance;
+            // Print out the available network interfaces
+            Console.WriteLine("Available Interfaces:");
+            for (int i = 0; i < devices.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {devices[i].Description}");
+            }
+
+            // Prompt the user to select a network interface
+            Console.Write("Enter the number of the interface to use: ");
+            int interfaceIndex = int.Parse(Console.ReadLine()) - 1;
+
+            // Open the selected network interface for capturing
+            var device = devices[interfaceIndex];
+            device.Open();
+
             // Load the pcap file
-            string pcapFile = "example.pcap";
-            CaptureFileReaderDevice captureFileReader = new CaptureFileReaderDevice(pcapFile);
+            var packetList = new List<Packet>();
+            var fileReader = new CaptureFileReaderDevice(args[0]);
+            fileReader.Open();
 
-            // Parse the captured packets
-            List<Packet> packets = new List<Packet>();
-            RawCapture rawCapture;
-            do
-            {
-                rawCapture = captureFileReader.GetNextPacket();
-                if (rawCapture != null)
-                {
-                    Packet packet = Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
-                    packets.Add(packet);
-                }
-            } while (rawCapture != null);
+            // Create a PacketCommunicator from the CaptureFileReaderDevice
+            var communicator = new LibPcapLiveDevice(fileReader.Name).Open();
 
-            // Display the packet data to the user
-            Console.WriteLine($"Found {packets.Count} packets in {pcapFile}:");
-            for (int i = 0; i < packets.Count; i++)
+            // Loop through the packets in the pcap file
+            RawCapture rawPacket;
+            Packet packet;
+            while (communicator.ReceivePacket(out rawPacket) == SharpPcap.Common.PacketCommunicatorReceiveResult.Ok)
             {
-                Console.WriteLine($"[{i}] {packets[i].ToString()}");
+                packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data);
+                packetList.Add(packet);
             }
 
-            // Prompt the user to choose which packet to send
-            Console.Write("Choose a packet to send (0-{0}): ", packets.Count - 1);
-            int selectedIndex = int.Parse(Console.ReadLine());
-            Packet selectedPacket = packets[selectedIndex];
-
-            // Convert the selected packet to a JSON string
-            string json = JsonConvert.SerializeObject(selectedPacket);
-
-            // Send the JSON string over the network to port 8484 using a TcpClient
-            using (TcpClient client = new TcpClient())
+            // Print out the packets in the pcap file
+            Console.WriteLine("Packets in file:");
+            for (int i = 0; i < packetList.Count; i++)
             {
-                client.Connect("localhost", 8484);
-                using (StreamWriter writer = new StreamWriter(client.GetStream()))
-                {
-                    writer.Write(json);
-                }
+                Console.WriteLine($"{i + 1}. {packetList[i].ToString()}");
             }
 
-            Console.WriteLine("Packet sent successfully!");
-            Console.ReadLine();
+            // Prompt the user to select a packet to send
+            Console.Write("Enter the number of the packet to send: ");
+            int packetIndex = int.Parse(Console.ReadLine()) - 1;
+            var selectedPacket = packetList[packetIndex];
+
+            // Send the packet
+            device.SendPacket(selectedPacket);
+
+            // Close the network interface
+            device.Close();
+
+            Console.WriteLine("Packet sent successfully.");
         }
     }
 }

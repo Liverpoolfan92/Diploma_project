@@ -32,3 +32,5 @@ C:\Users\zhele\Documents\GitHub\Diploma_project\udp_test\obj\Debug\net7.0\refint
 C:\Users\zhele\Documents\GitHub\Diploma_project\udp_test\obj\Debug\net7.0\udp_test.pdb
 C:\Users\zhele\Documents\GitHub\Diploma_project\udp_test\obj\Debug\net7.0\udp_test.genruntimeconfig.cache
 C:\Users\zhele\Documents\GitHub\Diploma_project\udp_test\obj\Debug\net7.0\ref\udp_test.dll
+C:\Users\zhele\Documents\GitHub\Diploma_project\udp_test\bin\Debug\net7.0\PacketDotNet.dll
+C:\Users\zhele\Documents\GitHub\Diploma_project\udp_test\bin\Debug\net7.0\SharpPcap.dll

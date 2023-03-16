@@ -1,10 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "IhpqcAcZ4IYPuZIS35ADDtWK2FiVDD5w3QlXVEwy8sutiYDwI+/4wJMYDV6hKzT7aBY5/1yxvCLLq0rPud92tQ==",
+  "dgSpecHash": "6XS7TLVMaS2IGW5WQ83ofANwbnkH8jOa/Q9Ah7fmQ56TJbzgiT6jjJZ8nh/TfiIA5MbZrg2hbEJIzOHtSJuInw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\udp_test\\udp_test.csproj",
+  "projectFilePath": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\udp_test\\udp_test.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\zhele\\.nuget\\packages\\newtonsoft.json\\13.0.2\\newtonsoft.json.13.0.2.nupkg.sha512"
+    "C:\\Users\\zhele\\.nuget\\packages\\newtonsoft.json\\13.0.2\\newtonsoft.json.13.0.2.nupkg.sha512",
+    "C:\\Users\\zhele\\.nuget\\packages\\packetdotnet\\1.4.6\\packetdotnet.1.4.6.nupkg.sha512",
+    "C:\\Users\\zhele\\.nuget\\packages\\sharppcap\\6.2.5\\sharppcap.6.2.5.nupkg.sha512",
+    "C:\\Users\\zhele\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\zhele\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\zhele\\.nuget\\packages\\system.text.encoding.codepages\\6.0.0\\system.text.encoding.codepages.6.0.0.nupkg.sha512"
   ],
   "logs": []
 }

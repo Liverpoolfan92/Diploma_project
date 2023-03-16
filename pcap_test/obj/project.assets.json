@@ -46,7 +46,7 @@
           }
         }
       },
-      "PacketDotNet/1.4.6": {
+      "PacketDotNet/1.4.7": {
         "type": "package",
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
@@ -178,17 +178,17 @@
         "packageIcon.png"
       ]
     },
-    "PacketDotNet/1.4.6": {
-      "sha512": "alTw0mrKv2wDbF3jnXl4yoNqSHu4atDrPC3SMlMI8UaaLI4QuULga99SAUg+9V9y9haYBLu5EbMLtOza4O7XnA==",
+    "PacketDotNet/1.4.7": {
+      "sha512": "xh4MGjkDFhJfFtAr6IEwg3ocPm3TO0/AxbYeCVoh9BaVT0xeWJB1p0nwKQ9olsQiQtSqF8M0UXz97U2VnOYY0w==",
       "type": "package",
-      "path": "packetdotnet/1.4.6",
+      "path": "packetdotnet/1.4.7",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/net47/PacketDotNet.dll",
         "lib/netstandard2.0/PacketDotNet.dll",
         "lib/netstandard2.1/PacketDotNet.dll",
-        "packetdotnet.1.4.6.nupkg.sha512",
+        "packetdotnet.1.4.7.nupkg.sha512",
         "packetdotnet.nuspec"
       ]
     },
@@ -296,23 +296,29 @@
     "net7.0": [
       "Libpcap >= 0.1.5",
       "Newtonsoft.Json >= 13.0.2",
+      "PacketDotNet >= 1.4.7",
       "SharpPcap >= 6.2.5"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\zhele\\.nuget\\packages\\": {}
+    "C:\\Users\\zhele\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\pcap_test\\pcap_test.csproj",
+      "projectUniqueName": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\pcap_test\\pcap_test.csproj",
       "projectName": "pcap_test",
-      "projectPath": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\pcap_test\\pcap_test.csproj",
+      "projectPath": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\pcap_test\\pcap_test.csproj",
       "packagesPath": "C:\\Users\\zhele\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\zhele\\OneDrive\\Documents\\GitHub\\test_go\\pcap_test\\obj\\",
+      "outputPath": "C:\\Users\\zhele\\Documents\\GitHub\\Diploma_project\\pcap_test\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
         "C:\\Users\\zhele\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -345,6 +351,10 @@
           "Newtonsoft.Json": {
             "target": "Package",
             "version": "[13.0.2, )"
+          },
+          "PacketDotNet": {
+            "target": "Package",
+            "version": "[1.4.7, )"
           },
           "SharpPcap": {
             "target": "Package",
