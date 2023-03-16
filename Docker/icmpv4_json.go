@@ -12,6 +12,10 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+type Packet struct {
+	Packet []byte `json:"packet"`
+}
+
 type PacketICMPv4 struct {
 	ICMPType int    `json:"icmpType"`
 	ICMPCode int    `json:"icmpCode"`
@@ -107,7 +111,30 @@ func main() {
 			log.Fatal(err)
 		}
 		outgoingPacket := buffer.Bytes()
-		fmt.Println("%+v", buffer.Bytes())
+		fmt.Println("JSON: ", outgoingPacket)
+
+		ip_host := os.Getenv("VAR1")
+
+		// Connect to TCP server at localhost:8485
+		conn8485, err := net.Dial("tcp", ip_host+":8485")
+		fmt.Println("IP:", ip_host)
+		if err != nil {
+			panic(err)
+		}
+		defer conn8485.Close()
+
+		// Create JSON object containing packet bytes
+		packet := Packet{Packet: outgoingPacket}
+		jsonPacket, err := json.Marshal(packet)
+		if err != nil {
+			panic(err)
+		}
+
+		// Send JSON object to server
+		_, err = conn8485.Write(jsonPacket)
+		if err != nil {
+			panic(err)
+		}
 
 		// Write the packet to the network interface
 		err = handle.WritePacketData(outgoingPacket)
