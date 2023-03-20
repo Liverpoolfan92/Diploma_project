@@ -44,18 +44,6 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
-            "Libpcap": {
-              "target": "Package",
-              "version": "[0.1.5, )"
-            },
-            "Newtonsoft.Json": {
-              "target": "Package",
-              "version": "[13.0.2, )"
-            },
-            "PacketDotNet": {
-              "target": "Package",
-              "version": "[1.4.7, )"
-            },
             "SharpPcap": {
               "target": "Package",
               "version": "[6.2.5, )"

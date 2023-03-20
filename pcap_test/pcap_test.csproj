@@ -8,9 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Libpcap" Version="0.1.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="PacketDotNet" Version="1.4.7" />
     <PackageReference Include="SharpPcap" Version="6.2.5" />
   </ItemGroup>
 
