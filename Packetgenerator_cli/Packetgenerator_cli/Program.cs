@@ -19,13 +19,14 @@ class Program
                 My_Ip.send_ip();
                 break;
             case "send(tcp)":
-                My_tcp.send_tcp();
+                My_Tcp.send_tcp();
                 break;
             case "send(udp)":
                 My_Udp.send_udp();
                 break;
             case "edit()":
                 string file_path = Console.ReadLine();
+                My_Pcap.send_pcap(file_path);
                 break;
             default:
                 Console.WriteLine("Invalid choice.");

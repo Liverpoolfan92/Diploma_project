@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Packetgenerator_cli.protocols
 {
-    internal class My_tcp
+    internal class My_Tcp
     {
         public static void send_tcp()
         {

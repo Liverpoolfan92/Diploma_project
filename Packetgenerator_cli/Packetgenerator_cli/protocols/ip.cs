@@ -12,10 +12,6 @@ namespace Packetgenerator_cli.protocols
 {
     internal class My_Ip
     { 
-        static void Main(string[] args)
-        {
-            send_ip();
-        }
         public static void send_ip()
         {
             // Get the user input from the console

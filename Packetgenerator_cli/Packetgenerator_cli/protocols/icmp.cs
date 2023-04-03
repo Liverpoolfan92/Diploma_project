@@ -111,6 +111,7 @@ namespace Packetgenerator_cli.protocols
                 // Clean up
                 client.Close();
             }
+
         }
     }
     class RAWPACKET

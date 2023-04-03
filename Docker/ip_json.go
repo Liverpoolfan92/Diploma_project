@@ -136,13 +136,5 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		// Write the packet to the network interface
-		err = handle.WritePacketData(outgoingPacket)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error sending packet: %v\n", err)
-			os.Exit(1)
-		}
-
-		fmt.Println("Packet sent successfully!")
 	}
 }
