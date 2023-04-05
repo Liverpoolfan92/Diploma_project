@@ -101,7 +101,6 @@ namespace Packetgenerator_cli.protocols
                 try
                 {
                     injectionDevice.SendPacket(packetdata);
-                    //device.SendPacket(obj.BYTES);
                     Console.WriteLine("-- Packet send successfuly.");
                 }
                 catch (Exception e)
@@ -109,9 +108,6 @@ namespace Packetgenerator_cli.protocols
                     Console.WriteLine("--" + e.Message);
                 }
                 device.Close();
-                Console.WriteLine("-- Device closed. ");
-                // Do something with the object
-                Console.WriteLine($"Received object with property1={obj.packet}");
 
                 // Clean up
                 client.Close();

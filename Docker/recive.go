@@ -1,122 +1,95 @@
-// package main
+package main
 
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"net"
+import (
+	"encoding/json"
+	"fmt"
+	"net"
+)
 
-// 	"github.com/google/gopacket/layers"
-// )
+type rawpacket struct {
+	Type string `json:"type"`
+}
 
-// type PacketInfo struct {
-// 	SrcMAC  string `json:"srcMAC"`
-// 	DstMAC  string `json:"dstMAC"`
-// 	SrcIP   string `json:"srcIP"`
-// 	DstIP   string `json:"dstIP"`
-// 	SrcPort int    `json:"srcPort"`
-// 	DstPort int    `json:"dstPort"`
-// 	Payload string `json:"payload"`
-// 	TTL     int    `json:"ttl"`
-// }
+type PacketTCP struct {
+	Type    string `json:"Type"`
+	SrcMac  string `json:"SrcMac"`
+	DstMac  string `json:"DstMac"`
+	SrcIP   string `json:"SrcIP"`
+	DstIP   string `json:"DstIP"`
+	SrcPort int    `json:"SrcPort"`
+	DstPort int    `json:"DstPort"`
+	TTL     int    `json:"TTL"`
+	SeqNum  int    `json:"SeqNum"`
+	AckNum  int    `json:"AckNum"`
+	Flags   string `json:"Flags"`
+	WinSize int    `json:"WinSize"`
+	Payload string `json:"Payload"`
+}
 
-// func main() {
-// 	fmt.Println("Listening on port 8484 for incoming JSON packets...")
-// 	addr, err := net.ResolveTCPAddr("tcp", ":8484")
-// 	if err != nil {
-// 		fmt.Println("Error resolving address:", err)
-// 		return
-// 	}
+type PacketUdp struct {
+	SrcIP   string `json:"srcIP"`
+	DstIP   string `json:"dstIP"`
+	SrcPort int    `json:"srcPort"`
+	DstPort int    `json:"dstPort"`
+	SrcMAC  string `json:"srcMAC"`
+	DstMAC  string `json:"dstMAC"`
+	Payload string `json:"payload"`
+}
 
-// 	ln, err := net.ListenTCP("tcp", addr)
-// 	if err != nil {
-// 		fmt.Println("Error listening:", err)
-// 		return
-// 	}
-// 	defer ln.Close()
+type PacketICMPv4 struct {
+	ICMPType int    `json:"icmpType"`
+	ICMPCode int    `json:"icmpCode"`
+	SrcIP    string `json:"srcIP"`
+	DstIP    string `json:"dstIP"`
+	SrcMAC   string `json:"srcMAC"`
+	DstMAC   string `json:"dstMAC"`
+}
 
-// 	for {
-// 		conn, err := ln.Accept()
-// 		if err != nil {
-// 			fmt.Println("Error accepting connection:", err)
-// 			continue
-// 		}
-// 		go handleConnection(conn)
-// 	}
-// }
+type PacketIP struct {
+	SrcMac  string `json:"SrcMac"`
+	DstMac  string `json:"DstMac"`
+	SrcIp   string `json:"SrcIp"`
+	DstIp   string `json:"DstIp"`
+	SrcPort int    `json:"SrcPort"`
+	DstPort int    `json:"DstPort"`
+	Payload string `json:"Payload"`
+	TTL     int    `json:"TTL"`
+}
 
-// func handleConnection(conn net.Conn) {
-// 	// Read incoming JSON
-// 	buf := make([]byte, 1024)
-// 	n, err := conn.Read(buf)
-// 	if err != nil {
-// 		fmt.Println("Error reading:", err)
-// 		return
-// 	}
+func main() {
+	// Listen on port 8484 for incoming connections
+	listener, err := net.Listen("tcp", ":8484")
+	if err != nil {
+		panic(err)
+	}
+	defer listener.Close()
 
-// 	var packet PacketInfo
-// 	err = json.Unmarshal(buf[:n], &packet)
-// 	if err != nil {
-// 		fmt.Println("Error parsing JSON:", err)
-// 		return
-// 	}
+	// Wait for a client to connect
+	conn, err := listener.Accept()
+	if err != nil {
+		panic(err)
+	}
 
-// 	// Create IP packet
-// 	srcMAC, err := net.ParseMAC(packet.SrcMAC)
-// 	if err != nil {
-// 		fmt.Println("Error parsing source MAC:", err)
-// 		return
-// 	}
+	// Parse the JSON data sent by the client
+	var rawpacket rawpacket
+	err = json.NewDecoder(conn).Decode(&rawpacket)
+	if err != nil {
+		panic(err)
+	}
 
-// 	dstMAC, err := net.ParseMAC(packet.DstMAC)
-// 	if err != nil {
-// 		fmt.Println("Error parsing destination MAC:", err)
-// 		return
-// 	}
+	fmt.Println(rawpacket.Type)
 
-// 	srcIP := net.ParseIP(packet.SrcIP)
-// 	if srcIP == nil {
-// 		fmt.Println("Error parsing source IP:", err)
-// 		return
-// 	}
-
-// 	dstIP := net.ParseIP(packet.DstIP)
-// 	if dstIP == nil {
-// 		fmt.Println("Error parsing destination IP:", err)
-// 		return
-// 	}
-
-// 	ipPacket := ip.Packet{
-// 		Version:  4,
-// 		IHL:      5,
-// 		TTL:      uint8(packet.TTL),
-// 		Protocol: ip.TCP,
-// 		SrcAddr:  srcIP,
-// 		DstAddr:  dstIP,
-// 	}
-
-// 	// Create Ethernet frame
-// 	ethFrame := eth.Frame{
-// 		Src:  srcMAC,
-// 		Dst:  dstMAC,
-// 		Type: eth.IPv4,
-// 		Data: ipPacket.Marshal(),
-// 	}
-
-// 	fmt.Println("Sending packet:", ethFrame)
-
-// 	// Send packet
-// 	rawConn, err := net.ListenPacket("raw", "eth0")
-// 	if err != nil {
-// 		fmt.Println("Error creating raw socket:", err)
-// 		return
-// 	}
-// 	defer rawConn.Close()
-
-// 	_, err = rawConn.WriteTo(ethFrame.Marshal(), &net.Interface{Index: 1})
-// 	if err != nil {
-// 		fmt.Println("Error sending packet:", err)
-// 		return
-// 	}
-
-// 	fmt.Println("Packet sent successfully!")
-// }
+	// // Call the appropriate handler function based on the packet type
+	// switch packetType {
+	// case "tcp":
+	// 	handle_tcp(packet)
+	// case "udp":
+	// 	handle_udp(packet)
+	// case "icmp":
+	// 	handle_icmp(packet)
+	// case "ip":
+	// 	handle_ip(packet)
+	// default:
+	// 	log.Fatalf("Error: unknown packet type '%s'", packetType)
+	// }
+}
