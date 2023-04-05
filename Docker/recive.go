@@ -71,7 +71,7 @@ func main() {
 	}
 
 	// Parse the JSON data sent by the client
-	var rawpacket rawpacket
+	var rawpacket PacketTCP
 	err = json.NewDecoder(conn).Decode(&rawpacket)
 	if err != nil {
 		panic(err)
