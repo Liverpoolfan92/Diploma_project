@@ -33,6 +33,7 @@ namespace Packetgenerator_cli.protocols
             // Create a JSON object from the input
             var data = new
             {
+                Type = "udp",
                 SrcMac = srcMacStr,
                 DstMac = dstMacStr,
                 SrcIp = srcIPStr,

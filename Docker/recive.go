@@ -37,6 +37,7 @@ type PacketUdp struct {
 }
 
 type PacketICMPv4 struct {
+	Type     string `json:"type"`
 	ICMPType int    `json:"icmpType"`
 	ICMPCode int    `json:"icmpCode"`
 	SrcIP    string `json:"srcIP"`
@@ -71,12 +72,19 @@ func main() {
 	}
 
 	// Parse the JSON data sent by the client
-	var rawpacket PacketTCP
+	var rawpacket_type PacketTCP
+	err = json.NewDecoder(conn).Decode(&rawpacket_type)
+	if err != nil {
+		panic(err)
+	}
+
+	var rawpacket PacketICMPv4
 	err = json.NewDecoder(conn).Decode(&rawpacket)
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Println(rawpacket_type.Type)
 	fmt.Println(rawpacket.Type)
 
 	// // Call the appropriate handler function based on the packet type

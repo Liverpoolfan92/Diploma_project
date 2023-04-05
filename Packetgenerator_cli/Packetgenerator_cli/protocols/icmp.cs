@@ -32,6 +32,7 @@ namespace Packetgenerator_cli.protocols
             // Create a JSON object from the input
             var data = new
             {
+                Type = "icmp",
                 ICMPType = icmpType,
                 ICMPCode = icmpCode,
                 SrcMac = srcMac,

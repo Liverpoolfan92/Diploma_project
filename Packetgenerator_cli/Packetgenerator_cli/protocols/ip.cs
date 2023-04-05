@@ -35,6 +35,7 @@ namespace Packetgenerator_cli.protocols
             // Create an object to hold the data
             var data = new
             {
+                Type = "ip",
                 SrcMac = srcMac,
                 DstMac = dstMac,
                 SrcIp = srcIp,
