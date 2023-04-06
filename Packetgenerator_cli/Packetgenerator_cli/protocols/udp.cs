@@ -34,13 +34,14 @@ namespace Packetgenerator_cli.protocols
             var data = new
             {
                 Type = "udp",
-                SrcMac = srcMacStr,
+                Data = ($"{srcMacStr}, {dstMacStr}, {srcIPStr}, {dstIPStr}, {Convert.ToInt32(srcPortStr)}, {Convert.ToInt32(dstPortStr)}, {payload}"),
+                /*SrcMac = srcMacStr,
                 DstMac = dstMacStr,
                 SrcIp = srcIPStr,
                 DstIp = dstIPStr,
                 SrcPort = Convert.ToInt32(srcPortStr),
                 DstPort = Convert.ToInt32(dstPortStr),
-                Payload = payload,
+                Payload = payload,*/
             };
 
             // Serialize the data to JSON

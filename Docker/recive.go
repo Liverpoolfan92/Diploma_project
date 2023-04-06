@@ -11,7 +11,6 @@ type rawpacket struct {
 }
 
 type PacketTCP struct {
-	Type    string `json:"Type"`
 	SrcMac  string `json:"SrcMac"`
 	DstMac  string `json:"DstMac"`
 	SrcIP   string `json:"SrcIP"`
@@ -37,7 +36,6 @@ type PacketUdp struct {
 }
 
 type PacketICMPv4 struct {
-	Type     string `json:"type"`
 	ICMPType int    `json:"icmpType"`
 	ICMPCode int    `json:"icmpCode"`
 	SrcIP    string `json:"srcIP"`
@@ -57,6 +55,11 @@ type PacketIP struct {
 	TTL     int    `json:"TTL"`
 }
 
+type Response struct {
+	Type string `json:"type"`
+	Data string `json:"data"`
+}
+
 func main() {
 	// Listen on port 8484 for incoming connections
 	listener, err := net.Listen("tcp", ":8484")
@@ -72,10 +75,29 @@ func main() {
 	}
 
 	// Parse the JSON data sent by the client
-	var rawpacket_type PacketTCP
-	err = json.NewDecoder(conn).Decode(&rawpacket_type)
+	var response Response
+	err = json.NewDecoder(conn).Decode(&response)
 	if err != nil {
 		panic(err)
+	}
+
+	switch response {
+	case "tcp":
+		var packet PacketTCP
+		err = json.Unmarshal([]byte(response.Data), &packet)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(packet)
+		break
+	case "udp":
+		var packet PacketUDP
+		err = json.Unmarshal([]byte(response.Data), &packet)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(packet)
+		break
 	}
 
 	var rawpacket PacketICMPv4
