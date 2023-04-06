@@ -35,7 +35,6 @@ namespace Packetgenerator_cli.protocols
             // Create an object to hold the data
             var data = new
             {
-                Type = "ip",
                 SrcMac = srcMac,
                 DstMac = dstMac,
                 SrcIp = srcIp,
@@ -47,7 +46,14 @@ namespace Packetgenerator_cli.protocols
             };
 
             // Serialize the data to JSON
-            var send_json = JsonConvert.SerializeObject(data);
+            var data_json = JsonConvert.SerializeObject(data);
+            var send_object = new
+            {
+                Type = "ip",
+                Data = data_json
+
+            };
+            var send_json = JsonConvert.SerializeObject(send_object);
 
             // Create a TCP client and connect to port 8484 on the local host
             using (var client8484 = new TcpClient())

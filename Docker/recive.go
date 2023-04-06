@@ -88,6 +88,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		handle_tcp(packet)
 		fmt.Println(packet)
 		break
 	case "udp":
@@ -96,6 +97,25 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		handle_udp(packet)
+		fmt.Println(packet)
+		break
+	case "ip":
+		var packet PacketIP
+		err = json.Unmarshal([]byte(response.Data), &packet)
+		if err != nil {
+			panic(err)
+		}
+		handle_ip(packet)
+		fmt.Println(packet)
+		break
+	case "icmp":
+		var packet PacketICMPv4
+		err = json.Unmarshal([]byte(response.Data), &packet)
+		if err != nil {
+			panic(err)
+		}
+		handle_icmp(packet)
 		fmt.Println(packet)
 		break
 	}

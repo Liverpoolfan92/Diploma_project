@@ -32,7 +32,6 @@ namespace Packetgenerator_cli.protocols
             // Create a JSON object from the input
             var data = new
             {
-                Type = "icmp",
                 ICMPType = icmpType,
                 ICMPCode = icmpCode,
                 SrcMac = srcMac,
@@ -42,7 +41,15 @@ namespace Packetgenerator_cli.protocols
             };
 
             // Serialize the data to JSON
-            var send_json = JsonConvert.SerializeObject(data);
+            var data_json = JsonConvert.SerializeObject(data);
+            var send_object = new
+            {
+                Type = "icmp",
+                Data = data_json
+
+            };
+            var send_json = JsonConvert.SerializeObject(send_object);
+
 
             // Create a TCP client and connect to port 8484 on the local host
             using (var client8484 = new TcpClient())

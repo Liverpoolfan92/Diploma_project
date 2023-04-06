@@ -38,10 +38,16 @@ class Program
 
             // Select a random interface name
             string interfaceName = interfaces[random.Next(interfaces.Length)].Name;
-
             // Create user-defined network
             string networkName = "packet_network";
-            ExecuteDockerCommand($"docker network create {networkName} --opt parent={interfaceName}");
+
+            try
+            {
+                ExecuteDockerCommand($"docker network create {networkName} --opt parent={interfaceName}");
+            }catch(Exception e)
+            {
+
+            }
 
             // Get host IP address
             var ipaddr = GetIpAddressByInterfaceName(interfaceName);

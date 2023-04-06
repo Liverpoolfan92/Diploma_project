@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.WebSockets;
 
 namespace Packetgenerator_cli.protocols
 {
@@ -30,22 +31,29 @@ namespace Packetgenerator_cli.protocols
             Console.Write("Payload: ");
             var payload = Console.ReadLine();
 
+           
+            
             // Create a JSON object from the input
             var data = new
             {
-                Type = "udp",
-                Data = ($"{srcMacStr}, {dstMacStr}, {srcIPStr}, {dstIPStr}, {Convert.ToInt32(srcPortStr)}, {Convert.ToInt32(dstPortStr)}, {payload}"),
-                /*SrcMac = srcMacStr,
+                SrcMac = srcMacStr,
                 DstMac = dstMacStr,
                 SrcIp = srcIPStr,
                 DstIp = dstIPStr,
                 SrcPort = Convert.ToInt32(srcPortStr),
                 DstPort = Convert.ToInt32(dstPortStr),
-                Payload = payload,*/
+                Payload = payload
             };
 
             // Serialize the data to JSON
-            var send_json = JsonConvert.SerializeObject(data);
+            var data_json = JsonConvert.SerializeObject(data);
+            var send_object = new
+            {
+                Type = "udp",
+                Data = data_json
+
+            };
+            var send_json = JsonConvert.SerializeObject(send_object);
 
             // Create a TCP client and connect to port 8484 on the local host
             using (var client8484 = new TcpClient())
