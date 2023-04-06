@@ -12,7 +12,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type PacketUdp struct {
+type PacketUDP struct {
 	SrcIP   string `json:"srcIP"`
 	DstIP   string `json:"dstIP"`
 	SrcPort int    `json:"srcPort"`
@@ -42,7 +42,7 @@ func main() {
 		}
 
 		// Parse the JSON data sent by the client
-		var packetudp PacketUdp
+		var packetudp PacketUDP
 		err = json.NewDecoder(conn8484).Decode(&packetudp)
 		if err != nil {
 			panic(err)

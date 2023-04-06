@@ -25,7 +25,7 @@ type PacketTCP struct {
 	Payload string `json:"Payload"`
 }
 
-type PacketUdp struct {
+type PacketUDP struct {
 	SrcIP   string `json:"srcIP"`
 	DstIP   string `json:"dstIP"`
 	SrcPort int    `json:"srcPort"`
