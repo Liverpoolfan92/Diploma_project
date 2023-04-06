@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+
+	"github.com/Liverpoolfan92/Diploma_project/ip"
+	"github.com/Liverpoolfan92/Diploma_project/tcp"
+	"github.com/Liverpoolfan92/Diploma_project/udp"
 )
 
 type rawpacket struct {
@@ -63,6 +67,8 @@ type Response struct {
 func main() {
 	var tcp tcp.PacketTCP
 	var udp udp.PacketUDP
+	var icmp icmp.PacketICMPv4
+	var ip ip.PacketIP
 
 	// Listen on port 8484 for incoming connections
 	listener, err := net.Listen("tcp", ":8484")
