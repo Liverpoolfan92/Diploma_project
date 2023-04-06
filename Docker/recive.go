@@ -100,14 +100,7 @@ func main() {
 		break
 	}
 
-	var rawpacket PacketICMPv4
-	err = json.NewDecoder(conn).Decode(&rawpacket)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(rawpacket_type.Type)
-	fmt.Println(rawpacket.Type)
+	fmt.Println(response.Type)
 
 	// // Call the appropriate handler function based on the packet type
 	// switch packetType {
