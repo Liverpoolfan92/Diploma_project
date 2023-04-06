@@ -1,4 +1,4 @@
-package main3
+package icmpv4
 
 import (
 	"encoding/json"

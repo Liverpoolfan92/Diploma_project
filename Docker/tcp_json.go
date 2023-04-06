@@ -1,4 +1,4 @@
-package main2
+package tcp
 
 import (
 	"encoding/json"

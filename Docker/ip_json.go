@@ -1,4 +1,4 @@
-package main6
+package ip
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package main
+package recive
 
 import (
 	"encoding/json"
@@ -61,6 +61,9 @@ type Response struct {
 }
 
 func main() {
+	var tcp tcp.PacketTCP
+	var udp udp.PacketUDP
+
 	// Listen on port 8484 for incoming connections
 	listener, err := net.Listen("tcp", ":8484")
 	if err != nil {
