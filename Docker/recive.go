@@ -81,7 +81,7 @@ func main() {
 		panic(err)
 	}
 
-	switch response {
+	switch response.Type {
 	case "tcp":
 		var packet PacketTCP
 		err = json.Unmarshal([]byte(response.Data), &packet)
