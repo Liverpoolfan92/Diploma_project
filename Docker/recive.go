@@ -131,18 +131,4 @@ func main() {
 	}
 
 	fmt.Println(response.Type)
-
-	// // Call the appropriate handler function based on the packet type
-	// switch packetType {
-	// case "tcp":
-	// 	handle_tcp(packet)
-	// case "udp":
-	// 	handle_udp(packet)
-	// case "icmp":
-	// 	handle_icmp(packet)
-	// case "ip":
-	// 	handle_ip(packet)
-	// default:
-	// 	log.Fatalf("Error: unknown packet type '%s'", packetType)
-	// }
 }
