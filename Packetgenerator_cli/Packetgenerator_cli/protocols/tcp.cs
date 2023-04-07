@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.NetworkInformation;
+using SharpPcap.LibPcap;
 
 namespace Packetgenerator_cli.protocols
 {
@@ -103,9 +105,14 @@ namespace Packetgenerator_cli.protocols
                 byte[] packetdata = Convert.FromBase64String(obj.packet);
 
                 CaptureDeviceList devices = CaptureDeviceList.Instance;
+                // Filter out inactive interfaces
                 for (int i = 0; i < devices.Count; i++)
                 {
-                    Console.WriteLine("{0}.{1}\n", i, devices[i]);
+
+                    if (devices[i] is LibPcapLiveDevice liveDevice && liveDevice.Opened)
+                    {
+                        Console.WriteLine("{0}.{1}\n", i, devices[i]);
+                    }
                     Console.WriteLine("Choose a device");
                 }
                 int dev = 0;

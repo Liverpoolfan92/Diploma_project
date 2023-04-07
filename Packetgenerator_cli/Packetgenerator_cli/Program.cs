@@ -18,8 +18,16 @@ class Program
             // Get all network interfaces
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
 
+
+            // Filter out WSL, VirtualBox Host-Only Network, and virtual interfaces
+            interfaces = interfaces.Where(i =>
+                !i.Name.Contains("WSL") &&
+                !i.Description.Contains("Virtual") &&
+                !i.NetworkInterfaceType.ToString().Contains("Virtual")).ToArray();
+
             // Filter out inactive interfaces
-            interfaces = interfaces.Where(i => i.OperationalStatus == OperationalStatus.Up).ToArray();
+            interfaces = interfaces.Where(i => i.OperationalStatus == OperationalStatus.Up).ToArray();  
+
 
             // Sort the interfaces so that Ethernet interfaces come first,
             // then Wi-Fi interfaces, and finally all other interfaces
