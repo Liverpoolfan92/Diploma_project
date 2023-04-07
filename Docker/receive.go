@@ -75,6 +75,9 @@ func main() {
 		icmpv4.Handle_icmp(packet)
 		fmt.Println(packet)
 		break
+	default:
+		fmt.Println("Unknown type")
+		break
 	}
 
 	fmt.Println(response.Type)
