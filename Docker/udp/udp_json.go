@@ -1,4 +1,4 @@
-package main
+package udp
 
 import (
 	"encoding/json"
@@ -12,46 +12,41 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+type PacketUDP struct {
+	SrcIP   string `json:"srcIP"`
+	DstIP   string `json:"dstIP"`
+	SrcPort int    `json:"srcPort"`
+	DstPort int    `json:"dstPort"`
+	SrcMAC  string `json:"srcMAC"`
+	DstMAC  string `json:"dstMAC"`
+	Payload string `json:"payload"`
+}
+
 type Packet struct {
 	Packet []byte `json:"packet"`
 }
 
-type PacketTCP struct {
-	SrcMac  string `json:"SrcMac"`
-	DstMac  string `json:"DstMac"`
-	SrcIP   string `json:"SrcIP"`
-	DstIP   string `json:"DstIP"`
-	SrcPort int    `json:"SrcPort"`
-	DstPort int    `json:"DstPort"`
-	TTL     int    `json:"TTL"`
-	SeqNum  int    `json:"SeqNum"`
-	AckNum  int    `json:"AckNum"`
-	Flags   string `json:"Flags"`
-	WinSize int    `json:"WinSize"`
-	Payload string `json:"Payload"`
-}
-
-func handle_tcp(packettcp PacketTCP) {
+func Handle_udp(packetudp PacketUDP) {
 
 	// Parse the source and destination IP addresses
-	srcIP := net.ParseIP(packettcp.SrcIP)
+	srcIP := net.ParseIP(packetudp.SrcIP)
 	if srcIP == nil {
-		log.Println("Invalid source IP address:", packettcp.SrcIP)
+		log.Println("Invalid source IP address:", packetudp.SrcIP)
 		return
 	}
-	dstIP := net.ParseIP(packettcp.DstIP)
+	dstIP := net.ParseIP(packetudp.DstIP)
 	if dstIP == nil {
-		log.Println("Invalid destination IP address:", packettcp.DstIP)
+		log.Println("Invalid destination IP address:", packetudp.DstIP)
 		return
 	}
 
 	// Parse the source and destination MAC addresses
-	srcMAC, err := net.ParseMAC(packettcp.SrcMac)
+	srcMAC, err := net.ParseMAC(packetudp.SrcMAC)
 	if err != nil {
 		fmt.Println("Error parsing source MAC address:", err)
 		return
 	}
-	dstMAC, err := net.ParseMAC(packettcp.DstMac)
+	dstMAC, err := net.ParseMAC(packetudp.DstMAC)
 	if err != nil {
 		fmt.Println("Error parsing destination MAC address:", err)
 		return
@@ -74,27 +69,18 @@ func handle_tcp(packettcp PacketTCP) {
 	// Create IP layer
 	ip := &layers.IPv4{
 		Version:  4,
-		TTL:      uint8(packettcp.TTL),
+		TTL:      64,
 		SrcIP:    srcIP,
 		DstIP:    dstIP,
-		Protocol: layers.IPProtocolTCP,
+		Protocol: layers.IPProtocolUDP,
 	}
 
-	// Create TCP layer
-	tcp := &layers.TCP{
-		SrcPort: layers.TCPPort(packettcp.SrcPort),
-		DstPort: layers.TCPPort(packettcp.DstPort),
-		Seq:     uint32(packettcp.SeqNum),
-		Ack:     uint32(packettcp.AckNum),
-		Window:  uint16(packettcp.WinSize),
-		SYN:     packettcp.Flags == "SYN",
-		ACK:     packettcp.Flags == "ACK",
-		RST:     packettcp.Flags == "RST",
-		PSH:     packettcp.Flags == "PSH",
-		URG:     packettcp.Flags == "URG",
+	// Create UDP layer
+	udp := &layers.UDP{
+		SrcPort: layers.UDPPort(packetudp.SrcPort),
+		DstPort: layers.UDPPort(packetudp.DstPort),
 	}
-	//calculate the checksum of a packet with eth, ip, tcp layers and payload
-	tcp.SetNetworkLayerForChecksum(ip)
+	udp.SetNetworkLayerForChecksum(ip)
 
 	// Create packet with all the layers
 	buffer := gopacket.NewSerializeBuffer()
@@ -102,10 +88,11 @@ func handle_tcp(packettcp PacketTCP) {
 		ComputeChecksums: true,
 		FixLengths:       true,
 	}
-	err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp, gopacket.Payload([]byte(packettcp.Payload)))
+	err = gopacket.SerializeLayers(buffer, opts, eth, ip, udp, gopacket.Payload([]byte(packetudp.Payload)))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	outgoingPacket := buffer.Bytes()
 	fmt.Println("JSON: ", outgoingPacket)
 
@@ -140,5 +127,4 @@ func handle_tcp(packettcp PacketTCP) {
 	}
 
 	fmt.Println("Packet sent successfully!")
-
 }

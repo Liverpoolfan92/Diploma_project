@@ -12,6 +12,10 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+type Packet struct {
+	Packet []byte `json:"packet"`
+}
+
 type PacketIP struct {
 	SrcMac  string `json:"SrcMac"`
 	DstMac  string `json:"DstMac"`
@@ -23,7 +27,7 @@ type PacketIP struct {
 	TTL     int    `json:"TTL"`
 }
 
-func handle_ip(packetIp PacketIP) {
+func Handle_ip(packetIp PacketIP) {
 
 	// Parse the source and destination IP addresses
 	srcIP := net.ParseIP(packetIp.SrcIp)

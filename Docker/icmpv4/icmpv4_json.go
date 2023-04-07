@@ -1,4 +1,4 @@
-package udp
+package icmpv4
 
 import (
 	"encoding/json"
@@ -12,41 +12,40 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-type PacketUDP struct {
-	SrcIP   string `json:"srcIP"`
-	DstIP   string `json:"dstIP"`
-	SrcPort int    `json:"srcPort"`
-	DstPort int    `json:"dstPort"`
-	SrcMAC  string `json:"srcMAC"`
-	DstMAC  string `json:"dstMAC"`
-	Payload string `json:"payload"`
-}
-
 type Packet struct {
 	Packet []byte `json:"packet"`
 }
 
-func handle_udp(packetudp PacketUDP) {
+type PacketICMPv4 struct {
+	ICMPType int    `json:"icmpType"`
+	ICMPCode int    `json:"icmpCode"`
+	SrcIP    string `json:"srcIP"`
+	DstIP    string `json:"dstIP"`
+	SrcMAC   string `json:"srcMAC"`
+	DstMAC   string `json:"dstMAC"`
+}
+
+func Handle_icmp(packeticmpv4 PacketICMPv4) {
 
 	// Parse the source and destination IP addresses
-	srcIP := net.ParseIP(packetudp.SrcIP)
+	srcIP := net.ParseIP(packeticmpv4.SrcIP)
 	if srcIP == nil {
-		log.Println("Invalid source IP address:", packetudp.SrcIP)
+		log.Println("Invalid source IP address:", packeticmpv4.SrcIP)
 		return
 	}
-	dstIP := net.ParseIP(packetudp.DstIP)
+	dstIP := net.ParseIP(packeticmpv4.DstIP)
 	if dstIP == nil {
-		log.Println("Invalid destination IP address:", packetudp.DstIP)
+		log.Println("Invalid destination IP address:", packeticmpv4.DstIP)
 		return
 	}
 
 	// Parse the source and destination MAC addresses
-	srcMAC, err := net.ParseMAC(packetudp.SrcMAC)
+	srcMAC, err := net.ParseMAC(packeticmpv4.SrcMAC)
 	if err != nil {
 		fmt.Println("Error parsing source MAC address:", err)
 		return
 	}
-	dstMAC, err := net.ParseMAC(packetudp.DstMAC)
+	dstMAC, err := net.ParseMAC(packeticmpv4.DstMAC)
 	if err != nil {
 		fmt.Println("Error parsing destination MAC address:", err)
 		return
@@ -72,15 +71,14 @@ func handle_udp(packetudp PacketUDP) {
 		TTL:      64,
 		SrcIP:    srcIP,
 		DstIP:    dstIP,
-		Protocol: layers.IPProtocolUDP,
+		Protocol: layers.IPProtocolICMPv4,
 	}
-
-	// Create UDP layer
-	udp := &layers.UDP{
-		SrcPort: layers.UDPPort(packetudp.SrcPort),
-		DstPort: layers.UDPPort(packetudp.DstPort),
+	//fix the next 15 lines?
+	// next 13 lines are godlike//no idea what it does
+	// Create ICMPv4 layer
+	icmpv4 := &layers.ICMPv4{
+		TypeCode: layers.CreateICMPv4TypeCode(uint8(packeticmpv4.ICMPType), uint8(packeticmpv4.ICMPCode)),
 	}
-	udp.SetNetworkLayerForChecksum(ip)
 
 	// Create packet with all the layers
 	buffer := gopacket.NewSerializeBuffer()
@@ -88,11 +86,10 @@ func handle_udp(packetudp PacketUDP) {
 		ComputeChecksums: true,
 		FixLengths:       true,
 	}
-	err = gopacket.SerializeLayers(buffer, opts, eth, ip, udp, gopacket.Payload([]byte(packetudp.Payload)))
+	err = gopacket.SerializeLayers(buffer, opts, eth, ip, icmpv4)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	outgoingPacket := buffer.Bytes()
 	fmt.Println("JSON: ", outgoingPacket)
 

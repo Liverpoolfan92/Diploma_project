@@ -1,4 +1,4 @@
-package icmpv4
+package tcp
 
 import (
 	"encoding/json"
@@ -16,36 +16,42 @@ type Packet struct {
 	Packet []byte `json:"packet"`
 }
 
-type PacketICMPv4 struct {
-	ICMPType int    `json:"icmpType"`
-	ICMPCode int    `json:"icmpCode"`
-	SrcIP    string `json:"srcIP"`
-	DstIP    string `json:"dstIP"`
-	SrcMAC   string `json:"srcMAC"`
-	DstMAC   string `json:"dstMAC"`
+type PacketTCP struct {
+	SrcMac  string `json:"SrcMac"`
+	DstMac  string `json:"DstMac"`
+	SrcIP   string `json:"SrcIP"`
+	DstIP   string `json:"DstIP"`
+	SrcPort int    `json:"SrcPort"`
+	DstPort int    `json:"DstPort"`
+	TTL     int    `json:"TTL"`
+	SeqNum  int    `json:"SeqNum"`
+	AckNum  int    `json:"AckNum"`
+	Flags   string `json:"Flags"`
+	WinSize int    `json:"WinSize"`
+	Payload string `json:"Payload"`
 }
 
-func handle_icmp(packeticmpv4 PacketICMPv4) {
+func Handle_tcp(packettcp PacketTCP) {
 
 	// Parse the source and destination IP addresses
-	srcIP := net.ParseIP(packeticmpv4.SrcIP)
+	srcIP := net.ParseIP(packettcp.SrcIP)
 	if srcIP == nil {
-		log.Println("Invalid source IP address:", packeticmpv4.SrcIP)
+		log.Println("Invalid source IP address:", packettcp.SrcIP)
 		return
 	}
-	dstIP := net.ParseIP(packeticmpv4.DstIP)
+	dstIP := net.ParseIP(packettcp.DstIP)
 	if dstIP == nil {
-		log.Println("Invalid destination IP address:", packeticmpv4.DstIP)
+		log.Println("Invalid destination IP address:", packettcp.DstIP)
 		return
 	}
 
 	// Parse the source and destination MAC addresses
-	srcMAC, err := net.ParseMAC(packeticmpv4.SrcMAC)
+	srcMAC, err := net.ParseMAC(packettcp.SrcMac)
 	if err != nil {
 		fmt.Println("Error parsing source MAC address:", err)
 		return
 	}
-	dstMAC, err := net.ParseMAC(packeticmpv4.DstMAC)
+	dstMAC, err := net.ParseMAC(packettcp.DstMac)
 	if err != nil {
 		fmt.Println("Error parsing destination MAC address:", err)
 		return
@@ -68,17 +74,27 @@ func handle_icmp(packeticmpv4 PacketICMPv4) {
 	// Create IP layer
 	ip := &layers.IPv4{
 		Version:  4,
-		TTL:      64,
+		TTL:      uint8(packettcp.TTL),
 		SrcIP:    srcIP,
 		DstIP:    dstIP,
-		Protocol: layers.IPProtocolICMPv4,
+		Protocol: layers.IPProtocolTCP,
 	}
-	//fix the next 15 lines?
-	// next 13 lines are godlike//no idea what it does
-	// Create ICMPv4 layer
-	icmpv4 := &layers.ICMPv4{
-		TypeCode: layers.CreateICMPv4TypeCode(uint8(packeticmpv4.ICMPType), uint8(packeticmpv4.ICMPCode)),
+
+	// Create TCP layer
+	tcp := &layers.TCP{
+		SrcPort: layers.TCPPort(packettcp.SrcPort),
+		DstPort: layers.TCPPort(packettcp.DstPort),
+		Seq:     uint32(packettcp.SeqNum),
+		Ack:     uint32(packettcp.AckNum),
+		Window:  uint16(packettcp.WinSize),
+		SYN:     packettcp.Flags == "SYN",
+		ACK:     packettcp.Flags == "ACK",
+		RST:     packettcp.Flags == "RST",
+		PSH:     packettcp.Flags == "PSH",
+		URG:     packettcp.Flags == "URG",
 	}
+	//calculate the checksum of a packet with eth, ip, tcp layers and payload
+	tcp.SetNetworkLayerForChecksum(ip)
 
 	// Create packet with all the layers
 	buffer := gopacket.NewSerializeBuffer()
@@ -86,7 +102,7 @@ func handle_icmp(packeticmpv4 PacketICMPv4) {
 		ComputeChecksums: true,
 		FixLengths:       true,
 	}
-	err = gopacket.SerializeLayers(buffer, opts, eth, ip, icmpv4)
+	err = gopacket.SerializeLayers(buffer, opts, eth, ip, tcp, gopacket.Payload([]byte(packettcp.Payload)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,4 +140,5 @@ func handle_icmp(packeticmpv4 PacketICMPv4) {
 	}
 
 	fmt.Println("Packet sent successfully!")
+
 }
