@@ -73,8 +73,7 @@ func Handle_icmp(packeticmpv4 PacketICMPv4) {
 		DstIP:    dstIP,
 		Protocol: layers.IPProtocolICMPv4,
 	}
-	//fix the next 15 lines?
-	// next 13 lines are godlike//no idea what it does
+
 	// Create ICMPv4 layer
 	icmpv4 := &layers.ICMPv4{
 		TypeCode: layers.CreateICMPv4TypeCode(uint8(packeticmpv4.ICMPType), uint8(packeticmpv4.ICMPCode)),
@@ -99,7 +98,7 @@ func Handle_icmp(packeticmpv4 PacketICMPv4) {
 	conn8485, err := net.Dial("tcp", ip_host+":8485")
 	fmt.Println("IP:", ip_host)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer conn8485.Close()
 
@@ -107,13 +106,13 @@ func Handle_icmp(packeticmpv4 PacketICMPv4) {
 	packet := Packet{Packet: outgoingPacket}
 	jsonPacket, err := json.Marshal(packet)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Send JSON object to server
 	_, err = conn8485.Write(jsonPacket)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Write the packet to the network interface

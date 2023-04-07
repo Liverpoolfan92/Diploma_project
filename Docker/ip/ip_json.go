@@ -104,7 +104,7 @@ func Handle_ip(packetIp PacketIP) {
 	conn8485, err := net.Dial("tcp", ip_host+":8485")
 	fmt.Println("IP:", ip_host)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer conn8485.Close()
 
@@ -112,12 +112,12 @@ func Handle_ip(packetIp PacketIP) {
 	packet := Packet{Packet: outgoingPacket}
 	jsonPacket, err := json.Marshal(packet)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Send JSON object to server
 	_, err = conn8485.Write(jsonPacket)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }

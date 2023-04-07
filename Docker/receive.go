@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/Liverpoolfan92/Diploma_project/icmpv4"
@@ -20,21 +21,21 @@ func main() {
 	// Listen on port 8484 for incoming connections
 	listener, err := net.Listen("tcp", ":8484")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer listener.Close()
 
 	// Wait for a client to connect
 	conn, err := listener.Accept()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Parse the JSON data sent by the client
 	var response Response
 	err = json.NewDecoder(conn).Decode(&response)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	switch response.Type {
@@ -42,7 +43,7 @@ func main() {
 		var packet tcp.PacketTCP
 		err = json.Unmarshal([]byte(response.Data), &packet)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		tcp.Handle_tcp(packet)
 		fmt.Println(packet)
@@ -51,7 +52,7 @@ func main() {
 		var packet udp.PacketUDP
 		err = json.Unmarshal([]byte(response.Data), &packet)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		udp.Handle_udp(packet)
 		fmt.Println(packet)
@@ -60,7 +61,7 @@ func main() {
 		var packet ip.PacketIP
 		err = json.Unmarshal([]byte(response.Data), &packet)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		ip.Handle_ip(packet)
 		fmt.Println(packet)
@@ -69,7 +70,7 @@ func main() {
 		var packet icmpv4.PacketICMPv4
 		err = json.Unmarshal([]byte(response.Data), &packet)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		icmpv4.Handle_icmp(packet)
 		fmt.Println(packet)
