@@ -18,6 +18,9 @@ class Program
             // Get all network interfaces
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
 
+            // Filter out inactive interfaces
+            interfaces = interfaces.Where(i => i.OperationalStatus == OperationalStatus.Up).ToArray();
+
             // Sort the interfaces so that Ethernet interfaces come first,
             // then Wi-Fi interfaces, and finally all other interfaces
             interfaces = interfaces.OrderByDescending(i =>
