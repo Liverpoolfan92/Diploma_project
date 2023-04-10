@@ -24,11 +24,6 @@ class Program
                 !i.Description.Contains("Virtual") &&
                 !i.NetworkInterfaceType.ToString().Contains("Virtual")).ToArray();
 
-        foreach (NetworkInterface intf in interfaces)
-        {
-            Console.WriteLine($"{intf.Name}; {intf.NetworkInterfaceType}; {intf.Description}\n\n");
-        }
-
         // Filter out inactive interfaces
         interfaces = interfaces.Where(i => i.OperationalStatus == OperationalStatus.Up).ToArray();  
 
