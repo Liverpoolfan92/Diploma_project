@@ -18,15 +18,19 @@ class Program
             // Get all network interfaces
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
 
-
             // Filter out WSL, VirtualBox Host-Only Network, and virtual interfaces
             interfaces = interfaces.Where(i =>
                 !i.Name.Contains("WSL") &&
                 !i.Description.Contains("Virtual") &&
                 !i.NetworkInterfaceType.ToString().Contains("Virtual")).ToArray();
 
-            // Filter out inactive interfaces
-            interfaces = interfaces.Where(i => i.OperationalStatus == OperationalStatus.Up).ToArray();  
+        foreach (NetworkInterface intf in interfaces)
+        {
+            Console.WriteLine($"{intf.Name}; {intf.NetworkInterfaceType}; {intf.Description}\n\n");
+        }
+
+        // Filter out inactive interfaces
+        interfaces = interfaces.Where(i => i.OperationalStatus == OperationalStatus.Up).ToArray();  
 
 
             // Sort the interfaces so that Ethernet interfaces come first,
@@ -49,6 +53,7 @@ class Program
 
             // Select a random interface name
             string interfaceName = interfaces[random.Next(interfaces.Length)].Name;
+
             // Create user-defined network
             string networkName = "packet_network";
 

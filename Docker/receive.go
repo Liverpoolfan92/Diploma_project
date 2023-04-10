@@ -18,14 +18,14 @@ type Response struct {
 }
 
 func main() {
-	for {
-		// Listen on port 8484 for incoming connections
-		listener, err := net.Listen("tcp", ":8484")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer listener.Close()
+	// Listen on port 8484 for incoming connections
+	listener, err := net.Listen("tcp", ":8484")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer listener.Close()
 
+	for {
 		// Wait for a client to connect
 		conn, err := listener.Accept()
 		if err != nil {
