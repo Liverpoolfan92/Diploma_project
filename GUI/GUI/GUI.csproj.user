@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Compile Update="FirstPage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ICMPv4Page.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="IPPage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PCAPPage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PCAP_ICMPv4.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PCAP_TCP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PCAP_UDP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="TCPPage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UDPPage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>
