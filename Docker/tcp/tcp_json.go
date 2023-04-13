@@ -87,11 +87,13 @@ func Handle_tcp(packettcp PacketTCP) {
 		Seq:     uint32(packettcp.SeqNum),
 		Ack:     uint32(packettcp.AckNum),
 		Window:  uint16(packettcp.WinSize),
-		SYN:     packettcp.Flags&1 == 1,
-		ACK:     packettcp.Flags>>1&1 == 1,
-		RST:     packettcp.Flags>>2&1 == 1,
-		PSH:     packettcp.Flags>>3&1 == 1,
-		URG:     packettcp.Flags>>4&1 == 1,
+		SYN:     (packettcp.Flags & (1 << 1)) != 0,
+		ACK:     (packettcp.Flags & (1 << 4)) != 0,
+		RST:     (packettcp.Flags & (1 << 2)) != 0,
+		PSH:     (packettcp.Flags & (1 << 3)) != 0,
+		URG:     (packettcp.Flags & (1 << 5)) != 0,
+		ECE:     (packettcp.Flags & (1 << 6)) != 0,
+		CWR:     (packettcp.Flags & (1 << 7)) != 0,
 	}
 	//calculate the checksum of a packet with eth, ip, tcp layers and payload
 	tcp.SetNetworkLayerForChecksum(ip)
