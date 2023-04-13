@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -87,11 +88,11 @@ func Handle_tcp(packettcp PacketTCP) {
 		Seq:     uint32(packettcp.SeqNum),
 		Ack:     uint32(packettcp.AckNum),
 		Window:  uint16(packettcp.WinSize),
-		SYN:     packettcp.Flags == "SYN",
-		ACK:     packettcp.Flags == "ACK",
-		RST:     packettcp.Flags == "RST",
-		PSH:     packettcp.Flags == "PSH",
-		URG:     packettcp.Flags == "URG",
+		SYN:     strings.Contains(packettcp.Flags, "SYN"),
+		ACK:     strings.Contains(packettcp.Flags, "ACK"),
+		RST:     strings.Contains(packettcp.Flags, "RST"),
+		PSH:     strings.Contains(packettcp.Flags, "PSH"),
+		URG:     strings.Contains(packettcp.Flags, "URG"),
 	}
 	//calculate the checksum of a packet with eth, ip, tcp layers and payload
 	tcp.SetNetworkLayerForChecksum(ip)
