@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
+using System.Globalization;
 
 namespace Packetgenerator_cli.protocols
 {
@@ -15,19 +16,46 @@ namespace Packetgenerator_cli.protocols
     {
         public static void send_udp()
         {
+            string srcIP, dstIP, srcMac, dstMac;
+            int srcPort, dstPort;
+
             // Prompt the user for input
-            Console.Write("SrcMAC: ");
-            var srcMacStr = Console.ReadLine();
-            Console.Write("DstMAC: ");
-            var dstMacStr = Console.ReadLine();
-            Console.Write("SrcIP: ");
-            var srcIPStr = Console.ReadLine();
-            Console.Write("DstIP: ");
-            var dstIPStr = Console.ReadLine();
-            Console.Write("SrcPort: ");
-            var srcPortStr = Console.ReadLine();
-            Console.Write("DstPort: ");
-            var dstPortStr = Console.ReadLine();
+            while (true)
+            {
+                Console.Write("SrcIP: ");
+                srcIP = Console.ReadLine();
+                if (IsValidIPv4Address(srcIP)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("DstIP: ");
+                dstIP = Console.ReadLine();
+                if (IsValidIPv4Address(dstIP)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SrcMAC: ");
+                srcMac = Console.ReadLine();
+                if (IsValidMACAddress(srcMac)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("DstMAC: ");
+                dstMac = Console.ReadLine();
+                if (IsValidMACAddress(dstMac)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SrcPort: ");
+                srcPort = int.Parse(Console.ReadLine());
+                if (IsValidPort(srcPort.ToString())) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SrcPort: ");
+                dstPort = int.Parse(Console.ReadLine());
+                if (IsValidPort(dstPort.ToString())) { break; }
+            }
             Console.Write("Payload: ");
             var payload = Console.ReadLine();
 
@@ -36,12 +64,12 @@ namespace Packetgenerator_cli.protocols
             // Create a JSON object from the input
             var data = new
             {
-                SrcMac = srcMacStr,
-                DstMac = dstMacStr,
-                SrcIp = srcIPStr,
-                DstIp = dstIPStr,
-                SrcPort = Convert.ToInt32(srcPortStr),
-                DstPort = Convert.ToInt32(dstPortStr),
+                SrcMac = srcMac,
+                DstMac = dstMac,
+                SrcIp = srcIP,
+                DstIp = dstIP,
+                SrcPort = Convert.ToInt32(srcPort),
+                DstPort = Convert.ToInt32(dstPort),
                 Payload = payload
             };
 
@@ -68,6 +96,83 @@ namespace Packetgenerator_cli.protocols
                 var bytes = Encoding.UTF8.GetBytes(send_json);
                 stream8484.Write(bytes, 0, bytes.Length);
             }
+        }
+
+        public static bool IsValidPort(string portNumberString)
+        {
+            if (int.TryParse(portNumberString, out int portNumber))
+            {
+                // Check if the port number is within the valid range (0 - 65535)
+                if (portNumber >= 0 && portNumber <= 65535)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsValidMACAddress(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            // Check if it contains exactly 5 colons
+            int colonCount = input.Count(c => c == ':');
+            if (colonCount != 5)
+            {
+                return false;
+            }
+
+            // Check if it is a valid MAC address
+            string[] octets = input.Split(':');
+            if (octets.Length != 6)
+            {
+                return false;
+            }
+
+            foreach (string octet in octets)
+            {
+                if (!byte.TryParse(octet, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte result))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool IsValidIPv4Address(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            // Check if it contains exactly 3 periods
+            int periodCount = input.Count(c => c == '.');
+            if (periodCount != 3)
+            {
+                return false;
+            }
+
+            // Check if it is a valid IPv4 address
+            string[] octets = input.Split('.');
+            if (octets.Length != 4)
+            {
+                return false;
+            }
+
+            foreach (string octet in octets)
+            {
+                if (!byte.TryParse(octet, out byte result))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using SharpPcap.LibPcap;
+using System.Globalization;
 
 namespace Packetgenerator_cli.protocols
 {
@@ -16,39 +17,86 @@ namespace Packetgenerator_cli.protocols
     {
         public static void send_tcp()
         {
+            string srcIP, dstIP, srcMac, dstMac, flags;
+            int srcPort, dstPort, ttl, seqNum, ackNum, winSize;
             // Prompt the user for input
-            Console.Write("SrcMAC: ");
-            var srcMacStr = Console.ReadLine();
-            Console.Write("DstMAC: ");
-            var dstMacStr = Console.ReadLine();
-            Console.Write("SrcIP: ");
-            var srcIPStr = Console.ReadLine();
-            Console.Write("DstIP: ");
-            var dstIPStr = Console.ReadLine();
-            Console.Write("SrcPort: ");
-            var srcPort = Convert.ToInt32(Console.ReadLine());
-            Console.Write("DstPort: ");
-            var dstPort = Convert.ToInt32(Console.ReadLine());
-            Console.Write("TTL: ");
-            var ttl = Convert.ToInt32(Console.ReadLine());
-            Console.Write("SeqNum: ");
-            var seqNum = Convert.ToInt32(Console.ReadLine());
-            Console.Write("AckNum: ");
-            var ackNum = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Flags: ");
-            var flagsStr = Console.ReadLine();
-            Console.Write("WinSize: ");
-            var winSize = Convert.ToInt32(Console.ReadLine());
+            while (true)
+            {
+                Console.Write("SrcIP: ");
+                srcIP = Console.ReadLine();
+                if (IsValidIPv4Address(srcIP)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("DstIP: ");
+                dstIP = Console.ReadLine();
+                if (IsValidIPv4Address(dstIP)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SrcMAC: ");
+                srcMac = Console.ReadLine();
+                if (IsValidMACAddress(srcMac)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("DstMAC: ");
+                dstMac = Console.ReadLine();
+                if (IsValidMACAddress(dstMac)) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SrcPort: ");
+                srcPort = int.Parse(Console.ReadLine());
+                if (IsValidPort(srcPort.ToString())) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SrcPort: ");
+                dstPort = int.Parse(Console.ReadLine());
+                if (IsValidPort(dstPort.ToString())) { break; }
+            }
+            while (true)
+            {
+                Console.Write("TTL: ");
+                ttl = int.Parse(Console.ReadLine());
+                if (IsValidTTL(ttl.ToString())) { break; }
+            }
+            while (true)
+            {
+                Console.Write("SeqNum: ");
+                seqNum = Convert.ToInt32(Console.ReadLine());
+                if (IsValidSeqNum(seqNum.ToString())) { break; }
+            }
+            while(true)
+            {
+                Console.Write("AckNum: ");
+                ackNum = Convert.ToInt32(Console.ReadLine());
+                if(IsValidAckNum(ackNum.ToString())) { break; }
+            }
+            while (true)
+            {
+                Console.Write("WinSize: ");
+                winSize = Convert.ToInt32(Console.ReadLine());
+                if(IsValidWinSize(winSize.ToString())) { break; }
+
+            }
+            while (true)
+            {
+                Console.Write("Flags: ");
+                flags = Console.ReadLine();
+                if (IsValidTCPFlags(flags)) { break; }
+            }
             Console.Write("Payload: ");
             var payload = Console.ReadLine();
 
             // Create a JSON object from the input
             var data = new
             {
-                SrcMac = srcMacStr,
-                DstMac = dstMacStr,
-                SrcIp = srcIPStr,
-                DstIp = dstIPStr,
+                SrcMac = srcMac,
+                DstMac = dstMac,
+                SrcIp = srcIP,
+                DstIp = dstIP,
                 SrcPort = srcPort,
                 DstPort = dstPort,
                 Payload = payload,
@@ -56,7 +104,7 @@ namespace Packetgenerator_cli.protocols
                 SeqNum = seqNum,
                 AckNum = ackNum,
                 WinSize = winSize,
-                FlagsStr = flagsStr,
+                FlagsStr = flags,
             };
 
             // Serialize the data to JSON
@@ -83,5 +131,164 @@ namespace Packetgenerator_cli.protocols
                 stream8484.Write(bytes, 0, bytes.Length);
             }
         }
+
+        public static bool IsValidTCPFlags(string tcpFlags)
+        {
+            // Define the valid TCP flags as an array
+            string[] validFlags = { "FIN", "SYN", "RST", "PSH", "ACK", "URG", "ECE", "CWR" };
+
+            // Split the input string into individual flags
+            string[] flags = tcpFlags.Split(',');
+
+            foreach (var flag in flags)
+            {
+                // Trim the flag and convert to uppercase for comparison
+                string trimmedFlag = flag.Trim().ToUpper();
+
+                // Check if the trimmed flag is a valid TCP flag
+                if (!Array.Exists(validFlags, f => f == trimmedFlag))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool IsValidSeqNum(string seqNum)
+        {
+            uint seqNumValue;
+            if (UInt32.TryParse(seqNum, out seqNumValue))
+            {
+                // Check if the sequence number is within the valid range (0 - UInt32.MaxValue)
+                if (seqNumValue <= UInt32.MaxValue)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsValidAckNum(string ackNum)
+        {
+            uint ackNumValue;
+            if (UInt32.TryParse(ackNum, out ackNumValue))
+            {
+                // Check if the acknowledgment number is within the valid range (0 - UInt32.MaxValue)
+                if (ackNumValue <= UInt32.MaxValue)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsValidWinSize(string winSize)
+        {
+            ushort winSizeValue;
+            if (UInt16.TryParse(winSize, out winSizeValue))
+            {
+                // Check if the window size is within the valid range (0 - UInt16.MaxValue)
+                if (winSizeValue <= UInt16.MaxValue)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsValidPort(string portNumberString)
+        {
+            if (int.TryParse(portNumberString, out int portNumber))
+            {
+                // Check if the port number is within the valid range (0 - 65535)
+                if (portNumber >= 0 && portNumber <= 65535)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsValidMACAddress(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            // Check if it contains exactly 5 colons
+            int colonCount = input.Count(c => c == ':');
+            if (colonCount != 5)
+            {
+                return false;
+            }
+
+            // Check if it is a valid MAC address
+            string[] octets = input.Split(':');
+            if (octets.Length != 6)
+            {
+                return false;
+            }
+
+            foreach (string octet in octets)
+            {
+                if (!byte.TryParse(octet, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte result))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool IsValidIPv4Address(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            // Check if it contains exactly 3 periods
+            int periodCount = input.Count(c => c == '.');
+            if (periodCount != 3)
+            {
+                return false;
+            }
+
+            // Check if it is a valid IPv4 address
+            string[] octets = input.Split('.');
+            if (octets.Length != 4)
+            {
+                return false;
+            }
+
+            foreach (string octet in octets)
+            {
+                if (!byte.TryParse(octet, out byte result))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        public static bool IsValidTTL(string ttlString)
+        {
+            if (int.TryParse(ttlString, out int ttl))
+            {
+                // Check if the TTL is within the valid range (1 - 255)
+                if (ttl >= 1 && ttl <= 255)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 }

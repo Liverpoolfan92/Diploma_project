@@ -8,12 +8,18 @@ using Newtonsoft.Json;
 using System.Text;
 using Packetgenerator_cli.protocols;
 using SharpPcap;
+using Docker.DotNet;
+using Docker.DotNet.Models;
 
 class Program
 {
     static void Main(string[] args)
     {
-            Random random = new Random();
+        // Set up the listener socket
+        TcpListener listener = new TcpListener(IPAddress.Any, 8485);
+        listener.Start();
+
+        Random random = new Random();
 
             // Get all network interfaces
             NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
@@ -52,19 +58,24 @@ class Program
             // Create user-defined network
             string networkName = "packet_network";
 
+        if (!CheckIfNetworkExists(networkName))
+        {
+
             try
             {
                 ExecuteDockerCommand($"docker network create {networkName} --opt parent={interfaceName}");
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
 
             }
+        }
 
             // Get host IP address
             var ipaddr = GetIpAddressByInterfaceName(interfaceName);
 
             // Run Docker container in user-defined network
-            string dockerCommand = $"docker run -dit --rm --name PacketGenerator -p 8484:8484 -p 8485:8485 --env VAR1={ipaddr} --network {networkName} test_1 bash";
+            string dockerCommand = $"docker run -dit --rm --name PacketGenerator -p 8484:8484 -p 8485:8485 --env VAR1={ipaddr} --network {networkName} test_1";
             ExecuteDockerCommand(dockerCommand);
 
         while (true)
@@ -74,14 +85,14 @@ class Program
 
             if (comand == "end")
             {
+                KillPacketDocker();
                 break;
             }
 
             switch (comand)
             {
-                case "--help":
+                case "help":
                     Console.WriteLine("send(TYPE OF THE PACKET) to create a file \nedit() to load form pcap filee \nend to stop the program");
-                    flag = 1;
                     break;
                 case "send(icmp)":
                     My_Icmp.send_icmp();
@@ -112,11 +123,6 @@ class Program
 
             if (flag == 1)
             {
-
-                // Set up the listener socket
-                TcpListener listener = new TcpListener(IPAddress.Any, 8485);
-                listener.Start();
-
                 // Wait for a connection
                 TcpClient client = listener.AcceptTcpClient();
 
@@ -132,7 +138,7 @@ class Program
                 CaptureDeviceList devices = CaptureDeviceList.Instance;
                 for (int i = 0; i < devices.Count; i++)
                 {
-                    Console.WriteLine("{0}.{1}\n", i, devices[i]);
+                    Console.WriteLine("{0}.{1}\n", i, devices[i].Description.ToString());
                     Console.WriteLine("Choose a device");
                 }
                 int dev = 0;
@@ -159,6 +165,23 @@ class Program
                 // Clean up
                 client.Close();
             }
+        }
+    }
+
+    public static void KillPacketDocker()
+    {
+        using (var client = new DockerClientConfiguration().CreateClient())
+        {
+            client.Containers.StopContainerAsync("PacketGenerator", new ContainerStopParameters()).Wait();
+        }
+    }
+
+    public static bool CheckIfNetworkExists(string networkName)
+    {
+        using (var client = new DockerClientConfiguration().CreateClient())
+        {
+            var networks = client.Networks.ListNetworksAsync().Result;
+            return networks.Any(n => n.Name == networkName);
         }
     }
 
