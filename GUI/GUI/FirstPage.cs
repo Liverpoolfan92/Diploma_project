@@ -39,6 +39,7 @@ namespace GUI
             interfaces = interfaces.Where(i =>
                 !i.Name.Contains("WSL") &&
                 !i.Description.Contains("Virtual") &&
+                !i.Description.Contains("OpenVPN") &&
                 !i.NetworkInterfaceType.ToString().Contains("Virtual")).ToArray();
 
             // Filter out inactive interfaces
