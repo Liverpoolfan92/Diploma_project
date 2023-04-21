@@ -80,6 +80,8 @@ func Handle_tcp(packettcp PacketTCP) {
 		Protocol: layers.IPProtocolTCP,
 	}
 
+	fmt.Print(packettcp.Flags)
+
 	// Create TCP layer
 	tcp := &layers.TCP{
 		SrcPort: layers.TCPPort(packettcp.SrcPort),

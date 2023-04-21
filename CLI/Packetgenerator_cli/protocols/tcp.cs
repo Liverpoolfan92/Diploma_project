@@ -104,7 +104,7 @@ namespace Packetgenerator_cli.protocols
                 SeqNum = seqNum,
                 AckNum = ackNum,
                 WinSize = winSize,
-                FlagsStr = flags,
+                FlagsStr = ConvertFlagsToInt(flags),
             };
 
             // Serialize the data to JSON
@@ -153,6 +153,51 @@ namespace Packetgenerator_cli.protocols
             }
 
             return true;
+        }
+
+        static int ConvertFlagsToInt(string flagsString)
+        {
+            string[] flagArray = flagsString.Split(','); // Split input string by commas to get individual flags
+            int result = 0;
+
+            foreach (string flag in flagArray)
+            {
+                string flagTrimmed = flag.Trim().ToUpper(); // Trim and convert flag to uppercase for case-insensitive comparison
+
+                // Add flag value to result based on flag string
+                switch (flagTrimmed)
+                {
+                    case "FIN":
+                        result |= 1 << 0;
+                        break;
+                    case "SYN":
+                        result |= 1 << 1;
+                        break;
+                    case "RST":
+                        result |= 1 << 2;
+                        break;
+                    case "PSH":
+                        result |= 1 << 3;
+                        break;
+                    case "ACK":
+                        result |= 1 << 4;
+                        break;
+                    case "URG":
+                        result |= 1 << 5;
+                        break;
+                    case "ECE":
+                        result |= 1 << 6;
+                        break;
+                    case "CWR":
+                        result |= 1 << 7;
+                        break;
+                    default:
+                        Console.WriteLine("Invalid flag: " + flagTrimmed);
+                        break;
+                }
+            }
+
+            return result;
         }
 
         public static bool IsValidSeqNum(string seqNum)
